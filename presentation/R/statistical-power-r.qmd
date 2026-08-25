@@ -1,0 +1,1438 @@
+---
+title: "Statistical Power"
+subtitle: ""
+author: "Ted Ellsworth, PhD"
+date: today
+format:
+  beamer:
+    theme: default
+    aspectratio: 169
+    slide-level: 2
+    pdf-engine: xelatex
+    include-in-header: ../../assets/beamer-header.tex
+    keep-tex: true
+---
+
+
+## Free statistical consulting for Yale researchers
+
+\vspace{2.8em}
+
+\begin{center}
+
+\large
+Study design $\cdot$ analysis $\cdot$ visualization $\cdot$ writing.
+
+\vspace{1.4em}
+
+\normalsize
+Walk-ins, appointments, and workshops --- free for all Yale affiliates.
+
+\vspace{2.8em}
+
+\textcolor{statsecondary}{%
+  \large\textbf{library.yale.edu/statlab}%
+}
+
+\end{center}
+
+
+## Introduction
+
+\vspace{1.4em}
+
+\begin{center}
+\large A committee, a reviewer, an IRB, or a funder asks: \textbf{how many subjects do you need?}
+\end{center}
+
+\vspace{1.6em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.9cm}>{\raggedright\arraybackslash}p{6.9cm}}
+\toprule
+\textbf{What you may have been told} & \textbf{What we will actually do} \\
+\midrule
+Power is a number you look up once & Power is a property of a design you can change \\
+Power is about sample size         & Sample size is one of three levers \\
+There is a formula, so use it      & The formula describes one study. Code describes yours. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+## Schedule
+
+\vspace{0.3em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{7.4cm}>{\raggedright\arraybackslash}p{3.1cm}}
+\toprule
+\textbf{Min} & \textbf{Block} & \textbf{Who is working} \\
+\midrule
+15 & What power is, and what it looks like                      & Lecture \\
+15 & The formula, worked by hand, and the effect it cannot see  & Work \\
+15 & \textcolor{statsecondary}{\textbf{Your turn 1:}} a tutoring study, checked in the EGAP app & \textbf{You work} \\
+10 & Where the numbers come from: guessing well                 & Discussion \\
+\midrule
+5  & \textit{Break}                                             & --- \\
+\midrule
+15 & Power in R: one formula, a grid of assumptions             & Demo \\
+15 & \textcolor{statsecondary}{\textbf{Your turn 2:}} build the sweep, find the $N$ you need & \textbf{You code} \\
+15 & When the formula stops describing your study: simulation   & Demo \\
+5  & What voids your calculation                                & Lecture\\
+10 & \textcolor{statsecondary}{\textbf{Your turn 3:}} your own design, on the scaffold & \textbf{You code} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Learning Objectives
+
+\vspace{0.3em}
+
+\small By the end of the session you should be able to:
+
+\vspace{0.4em}
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{>{\raggedright\arraybackslash}p{7.3cm}>{\raggedright\arraybackslash}p{5.4cm}}
+\toprule
+\textbf{You will be able to} & \textbf{You will show it by} \\
+\midrule
+\textbf{Name} the three ingredients of power and \textbf{identify} which you control
+  & Reading a design and saying which lever is available \\
+\textbf{Compute} power for a two-arm difference in means, and the \textbf{smallest effect} a design can see
+  & Doing it by hand, then reproducing it in the EGAP calculator \\
+\textbf{Write} the formula as an R function and \textbf{sweep} it over a grid of sample sizes and effects
+  & Returning the smallest $N$ that reaches 80\% power \\
+\textbf{Defend} the effect size you assumed, naming its source
+  & Reporting power as a \textit{range}, not one number \\
+\textbf{Diagnose} when the closed form no longer describes your study
+  & Pointing to the assumption your design breaks \\
+\textbf{Simulate} power for a design the formula cannot handle
+  & Generating data from your estimand, fitting your estimator, counting rejections \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Type I and II Errors
+
+- Most diagnostic statistics seek to identify two types of errors:
+
+  - *Type I Errors* ($\alpha$) refer to the probability that you will claim an effect is *present* when the **null hypothesis is true**.
+  - *Type II Errors* ($\beta$) refer to the probability that you will claim an effect is *absent* when the **null hypothesis is false**.
+
+- Power is what is left over from a Type II error: $\text{power} = 1 - \beta$.
+
+
+## What is Statistical Power? 
+
+- Less formally: power is a study's ability to *distinguish signal from noise.*
+
+  - The *signal* is the real effect.
+  - The *noise* is everything else (e.g., sampling variability, measurement error, differences between units, etc.)
+
+
+## What Power Looks Like
+
+```{r power-picture, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7.6, fig.height=2.75, dev="png", dpi=300, fig.align="center"}
+library(ggplot2)
+cv <- qnorm(0.975)
+zz <- seq(-3.6, 6.2, length.out = 700)
+dd <- rbind(
+  data.frame(z = zz, y = dnorm(zz, 0),    curve = "If the null is true"),
+  data.frame(z = zz, y = dnorm(zz, 2.24), curve = "If the 7-point effect is real"))
+
+ggplot(dd, aes(z, y)) +
+  geom_area(data = subset(dd, curve != "If the null is true" & z >= cv),
+            fill = "#4A90C2", alpha = 0.55) +
+  geom_area(data = subset(dd, curve == "If the null is true" & z >= cv),
+            fill = "#B41E1E", alpha = 0.70) +
+  geom_line(aes(colour = curve), linewidth = 0.75) +
+  geom_vline(xintercept = cv, colour = "grey20", linewidth = 0.4, linetype = "dashed") +
+  annotate("text", x = 3.6, y = 0.20, label = "power = 0.61",
+           colour = "#0B2E52", size = 3.1, fontface = "bold") +
+  annotate("text", x = 2.45, y = 0.045, label = "alpha/2 == 0.025", parse = TRUE,
+           colour = "#B41E1E", size = 2.7, hjust = 0) +
+  annotate("text", x = cv, y = 0.43, label = "reject to the right of 1.96",
+           colour = "grey20", size = 2.7, hjust = -0.04) +
+  scale_colour_manual(values = c("If the null is true" = "#B41E1E",
+                                 "If the 7-point effect is real" = "#0B2E52"),
+                      name = NULL) +
+  # 1.96 and 2.24 nearly collide on the axis; drop the second label a row
+  scale_x_continuous(breaks = c(0, cv, 2.24), labels = c("0", "1.96", "\n2.24")) +
+  labs(x = "Effect, measured in standard errors", y = NULL) +
+  theme_minimal(base_size = 9) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(linewidth = 0.25, colour = "grey88"),
+        axis.text.y = element_blank(),
+        axis.title = element_text(colour = "grey30"),
+        legend.position = "bottom", legend.margin = margin(t = -6))
+```
+
+\vspace{-0.2em}
+
+\begin{center}
+\footnotesize \textcolor{errorred}{\textbf{Red}} is the study you would run if there were no effect; the shaded sliver past 1.96 is $\alpha$ --- the false positives you agreed to tolerate. \textcolor{statsecondary}{\textbf{Blue}} is the study you expect if the effect is real; \textbf{the shaded area past the same line is power}.
+\end{center}
+
+
+## Type II Error Tolerance
+
+- When conducting power analysis, our goal is to derive the probability of *detecting* a positive effect when the null hypothesis is false.
+- Many studies use $\text{power} \geq 80\%$ (equivalently, $\beta \leq 0.20$) as a threshold:
+  - Implies that there is a $20\%$ chance that you will *not* find an effect that is present.
+  - Better to treat as a heuristic, rather than an explicit benchmark.
+
+
+## Core Notation
+
+In order to estimate statistical power, we need four qualities:
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{7.9cm}}
+\toprule
+\textbf{Symbol} & \textbf{Quality} & \textbf{What it is} \\
+\midrule
+$N$              & Sample size        & How many subjects you collect in total. \\
+$\mu_t - \mu_c$  & Effect size        & The true difference between the treatment and control means: the \textit{signal}. \\
+$\sigma$         & Standard deviation & How much outcomes vary from one another: the \textit{noise}. \\
+$\alpha$         & Significance level & The Type I error rate you are willing to tolerate; it sets the evidence threshold. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+
+\begin{center}
+\small Note we will use $\mu_t - \mu_c$ throughout to denote effect size. Where space is tight --- in code, and in the appendix --- we abbreviate it $\delta$. 
+\end{center}
+
+
+## The Three Ingredients of Statistical Power
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}cc>{\raggedright\arraybackslash}p{6.2cm}}
+\toprule
+\textbf{Ingredient} & \textbf{Symbol} & \textbf{Control?} & \textbf{What it does} \\
+\midrule
+Strength of the treatment & $\mu_t - \mu_c$ & Partly & Dose, framing, and duration are yours to set; a stronger treatment is easier to detect. \\
+Background noise & $\sigma$ & Partly & Noisier outcomes bury the signal, but better measurement and covariates quiet it. \\
+Experimental design & $N$, $\alpha$ & \textbf{Yes} & Sample size, randomization scheme, and covariate adjustment. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+## Key Formula for Calculating Power
+
+\vspace{0.2em}
+
+\begin{center}
+$\displaystyle \text{power} \;=\; \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)$
+\end{center}
+
+\vspace{0.8em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{7.9cm}}
+\toprule
+\textbf{Symbol} & \textbf{Quality} & \textbf{What it is} \\
+\midrule
+$\Phi$      & Normal CDF         & The CDF of the standard normal distribution. \\
+$\Phi^{-1}$ & Inverse normal CDF & Its inverse; returns the critical value for a given tail probability. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.2em}
+
+\scriptsize Source: Coppock, \textit{10 Things to Know About Statistical Power} (EGAP). EGAP writes this quantity as $\beta$; the dominant convention reserves $\beta$ for the Type II error rate, so that $\text{power} = 1-\beta$. We follow the latter.
+
+## A Running Example: Does the Message Move Opinion?
+
+\begin{notebox}
+\small You are fielding a survey experiment with \textbf{164 respondents}, randomly assigned 50/50 to read a short informational message (treatment) or no message (control). Support for the policy is measured on a 0--100 feeling thermometer, and a pilot study supplies your assumptions.
+\end{notebox}
+
+\vspace{0.2em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{cc>{\raggedright\arraybackslash}p{7.4cm}}
+\toprule
+\textbf{Symbol} & \textbf{Value} & \textbf{Where it comes from} \\
+\midrule
+$N$      & 164  & Total respondents (82 per arm). \\
+$\mu_t$  & 57   & Assumed mean support under treatment. \\
+$\mu_c$  & 50   & Control mean, from the pilot. \\
+$\sigma$ & 20   & Standard deviation, from the pilot. \\
+$\alpha$ & 0.05 & Two-sided, by convention. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.2em}
+
+\small Assumed effect: $\mu_t - \mu_c = 7$ points, or $0.35\sigma$. \textbf{Can we detect a 7-point effect with 164 respondents?}
+
+
+## Step 1: Do the Arithmetic
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)
+   && \text{\small the formula} \\[0.25em]
+&= \Phi\!\left( \frac{7\,\sqrt{164}}{2(20)} \;-\; \textcolor{statsecondary}{1.96} \right)
+   && \text{\small plug in; \;\; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.24}} \;-\; 1.96 \right) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{0.28})}
+   && \text{\small $7 \times 12.81 / 40 = 2.24$}
+\end{align*}
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+$\underbrace{\mathbf{2.24}}_{\text{what you expect}}$ \qquad
+$\underbrace{\mathbf{1.96}}_{\text{what you need}}$ \qquad
+$\underbrace{\mathbf{0.28}}_{\text{all the room you have}}$
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\scriptsize A thin margin means an unreliable study. One lookup turns $\Phi(0.28)$ into a number. \\
+(Where does $1.96$ come from? Running the $z$-table \textit{backwards} --- see the appendix.)
+\end{center}
+
+
+## Step 2: Read the Answer Off the Table
+
+\begin{columns}[T]
+
+\begin{column}{0.30\textwidth}
+\vspace{0.6em}
+
+\begin{center}
+$\text{power} = \Phi(\mathbf{0.28})$
+\end{center}
+
+\vspace{0.5em}
+
+\footnotesize
+Split the $z$-score across the two margins of the table:
+
+\vspace{0.4em}
+
+\hspace{0.5em}$\mathbf{0.2}\;$ selects the \textbf{row}
+
+\vspace{0.2em}
+
+\hspace{0.5em}$\mathbf{0.08}$ selects the \textbf{column}
+
+\vspace{0.5em}
+
+The cell where they meet is the area to the \textit{left} of $z$, which is exactly the power.
+\end{column}
+
+\begin{column}{0.70\textwidth}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$z$ & .00 & .01 & .02 & .03 & .04 & .05 & .06 & .07 & \cellcolor{stataccbg}\textbf{.08} & .09 \\
+\midrule
+0.0 & .5000 & .5040 & .5080 & .5120 & .5160 & .5199 & .5239 & .5279 & \cellcolor{stataccbg}.5319 & .5359 \\
+0.1 & .5398 & .5438 & .5478 & .5517 & .5557 & .5596 & .5636 & .5675 & \cellcolor{stataccbg}.5714 & .5753 \\
+\cellcolor{stataccbg}\textbf{0.2} & \cellcolor{stataccbg}.5793 & \cellcolor{stataccbg}.5832 & \cellcolor{stataccbg}.5871 & \cellcolor{stataccbg}.5910 & \cellcolor{stataccbg}.5948 & \cellcolor{stataccbg}.5987 & \cellcolor{stataccbg}.6026 & \cellcolor{stataccbg}.6064 & \cellcolor{statorange}\textbf{\color{white}.6103} & \cellcolor{stataccbg}.6141 \\
+0.3 & .6179 & .6217 & .6255 & .6293 & .6331 & .6368 & .6406 & .6443 & \cellcolor{stataccbg}.6480 & .6517 \\
+0.4 & .6554 & .6591 & .6628 & .6664 & .6700 & .6736 & .6772 & .6808 & \cellcolor{stataccbg}.6844 & .6879 \\
+0.5 & .6915 & .6950 & .6985 & .7019 & .7054 & .7088 & .7123 & .7157 & \cellcolor{stataccbg}.7190 & .7224 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+
+\begin{center}
+\large $\text{power} \;=\; \Phi(0.28) \;=\; \textcolor{statorange}{\mathbf{0.61}}$
+\end{center}
+
+
+## The Smallest Effect This Study Can See
+
+\small We now know what this design does with a 7-point effect. The next question is what it \textit{can} do: fix power at 80\% and solve the same formula for the effect instead of for power.
+
+\vspace{0.3em}
+
+\begin{center}
+$\displaystyle \text{MDE} \;=\; \underbrace{\left(\Phi^{-1}\!\left(1-\tfrac{\alpha}{2}\right) + \Phi^{-1}(0.80)\right)}_{1.96 \;+\; 0.84 \;=\; 2.80} \;\times\; \underbrace{\frac{2\sigma}{\sqrt{N}}}_{\text{standard error}}$
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{ccc}
+\toprule
+$N$ & \textbf{Smallest detectable effect} & \textbf{In standard deviations} \\
+\midrule
+\textcolor{statorange}{\textbf{164}} & \textcolor{statorange}{\textbf{8.75 points}} & \textcolor{statorange}{\textbf{0.44$\sigma$}} \\
+257  & 6.99 & 0.35$\sigma$ \\
+400  & 5.60 & 0.28$\sigma$ \\
+800  & 3.96 & 0.20$\sigma$ \\
+1396 & 3.00 & 0.15$\sigma$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\small Pilot assumes $\mu_t - \mu_c = \mathbf{7}$. \qquad This design detects $\textcolor{statorange}{\mathbf{8.75}}$ and up.
+\end{center}
+
+
+## Check: Put 8.75 Back Through the Formula
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{8.75\,\sqrt{164}}{2(20)} \;-\; 1.96 \right)
+   && \text{\small the MDE in place of the pilot's effect} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.80}} \;-\; 1.96 \right) \;=\; \Phi(\textcolor{statsecondary}{\mathbf{0.84}})
+   && \text{\small $8.75 \times 12.81 / 40 = 2.80$} \\[0.25em]
+&= \mathbf{0.80}
+   && \text{\small row $0.8$, column $.04 \to .7995$}
+\end{align*}
+
+\vspace{0.4em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{6.6cm}c}
+\toprule
+\textbf{Pin these three} & \textbf{Get} \\
+\midrule
+$N = 164$, \; $\sigma = 20$, \; effect $= 7$      & power $= 0.61$ \\
+$N = 164$, \; $\sigma = 20$, \; power $= 0.80$    & effect $= 8.75$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Your Turn: Is the Tutoring Program Worth Studying?
+
+\vspace{0.5em}
+
+\begin{notebox}
+\small A colleague is evaluating a new tutoring program. \textbf{400 students} will be randomly assigned, 200 to tutoring and 200 to business as usual, with final exam score as the outcome. Past cohorts averaged \textbf{72} points with a standard deviation of \textbf{10}, and the program is expected to add \textbf{3} points.
+\end{notebox}
+
+\vspace{0.7em}
+
+\begin{center}
+\large \textbf{What is the power of this design?}
+\end{center}
+
+\vspace{0.7em}
+
+\begin{columns}[c]
+
+\begin{column}{0.46\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{cc}
+\toprule
+\textbf{Symbol} & \textbf{Value} \\
+\midrule
+$N$      & 400  \\
+$\mu_t$  & 75   \\
+$\mu_c$  & 72   \\
+$\sigma$ & 10   \\
+$\alpha$ & 0.05, two-sided \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.50\textwidth}
+\footnotesize
+The formula and the $z$-table are on your \textbf{handout}.
+
+\vspace{0.6em}
+
+Work it in three moves:
+
+\vspace{0.3em}
+
+\hspace{0.4em}1. Compute what you \textbf{expect}
+
+\vspace{0.2em}
+
+\hspace{0.4em}2. Subtract what you \textbf{need}
+
+\vspace{0.2em}
+
+\hspace{0.4em}3. Look the difference up
+\end{column}
+
+\end{columns}
+
+
+
+## Your Turn: The Solution
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|75 - 72|\,\sqrt{400}}{2(10)} \;-\; \Phi^{-1}\!\left(1-\tfrac{0.05}{2}\right) \right)
+   && \text{\small \textbf{Step 1:} plug in} \\[0.25em]
+&= \Phi\!\left( \frac{3 \times 20}{20} \;-\; 1.96 \right)
+   && \text{\small \textbf{Step 2:} $\sqrt{400} = 20$; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi(3.00 - 1.96) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{1.04})}
+   && \text{\small \textbf{Step 3:} simplify} \\[0.25em]
+&= \mathbf{0.85}
+   && \text{\small \textbf{Step 4:} row $1.0$, column $.04 \to .8508$}
+\end{align*}
+
+\vspace{0.2em}
+
+
+## Check Your Work: The EGAP Power Calculator
+
+\vspace{0.3em}
+
+\begin{center}
+\small \url{https://egap.shinyapps.io/power-app/}
+\end{center}
+
+\vspace{0.6em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{6.4cm}c}
+\toprule
+\textbf{Our symbol} & \textbf{Field in the app} & \textbf{Enter} \\
+\midrule
+$\mu_t - \mu_c$ & Treatment Effect Size                  & 3    \\
+$\sigma$        & Standard Deviation of Outcome Variable & 10   \\
+$\alpha$        & Significance Level                     & 0.05 \\
+                & Power Target                           & 0.8  \\
+                & Maximum Number of Subjects             & 800  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small Leave \textit{Clustered Design} and \textit{Binary Dependent Variable} unchecked.
+\end{center}
+
+
+## Reading the Power Curve
+
+\begin{columns}[c]
+
+\begin{column}{0.53\textwidth}
+\includegraphics[width=\linewidth]{images/egap-power-app.png}
+\end{column}
+
+\begin{column}{0.45\textwidth}
+\footnotesize
+\setlength{\itemsep}{0.35em}
+\begin{itemize}
+\item The $x$-axis is \textbf{total sample size}; the $y$-axis is \textbf{power}.
+\item The blue curve traces power as $N$ grows, holding the effect at 3 and $\sigma$ at 10.
+\item The red dashed line marks the \textbf{80\% target}. Where the curve crosses it is the $N$ you need (here \textbf{349}).
+\item Our $N = 400$ sits to the \textit{right} of that crossing. Reading up from 400 gives $\approx \mathbf{0.85}$.
+\item The curve \textbf{flattens}: past $\sim$600 suggests diminishing returns at larger N.
+\end{itemize}
+\end{column}
+
+\end{columns}
+
+## Where to Situate Power Analysis in Your Research
+
+- Power analysis is tricky because we need information about our data to derive power (e.g., $\sigma$, $\mu_t - \mu_c$).
+- The problem is power calculations are most useful *before* we've collected our data!
+- In order to do power analysis we need to do some educated guessing: 
+  - How big an effect should I anticipate? 
+  - How many people can I realistically afford to treat?
+  - How many subjects will answer my survey?
+
+## Conjecture in Power Analysis
+
+If power analysis relies on educated guesses, what can we build those guesses from?
+
+\vspace{0.4em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{8.7cm}}
+\toprule
+\textbf{The guess} & \textbf{What you can build it from} \\
+\midrule
+How big an effect should I anticipate? \newline \textcolor{statsecondary}{$\mu_t - \mu_c$, \; $\sigma$}
+& \leavevmode\uncover<2->{\textbullet~Published effects, discounted for publication bias}\newline
+\uncover<2->{\textbullet~A pilot or baseline wave: gives you $\sigma$ directly}\newline
+\uncover<2->{\textbullet~The \textit{smallest} effect big enough to matter} \\
+\midrule
+How many people can I realistically afford to treat? \newline \textcolor{statsecondary}{$N$}
+& \leavevmode\uncover<3->{\textbullet~Budget divided by cost per subject}\newline
+\uncover<3->{\textbullet~Field period, staff time, partner capacity}\newline
+\uncover<3->{\textbullet~Size of the sampling frame you can actually reach} \\
+\midrule
+How many subjects will answer my survey? \newline \textcolor{statsecondary}{$N$ realized}
+& \leavevmode\uncover<4->{\textbullet~Response rates from earlier waves or comparable surveys}\newline
+\uncover<4->{\textbullet~Attrition rates in similar designs}\newline
+\uncover<4->{\textbullet~Power the \textit{analyzed} $N$, not the invited $N$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.2em}
+
+\uncover<5->{\begin{center}
+\small Every one of these is a \textbf{range}, not a number. \textit{So which number do you use?}
+\end{center}}
+
+
+## What If We Don't Know the Effect?
+
+\vspace{0.2em}
+
+\small Back to the survey experiment. The pilot fixed everything \textit{except} for the anticipated effect size.
+
+\vspace{0.5em}
+
+\begin{columns}[T]
+
+\begin{column}{0.40\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Fixed by the pilot}} \\
+\midrule
+$\mu_c$        & 50   \\
+$\sigma$       & 20   \\
+$\alpha$       & 0.05 \\
+target power & 0.80 \\
+\midrule
+$\mu_t - \mu_c$ & \textcolor{statorange}{\textbf{?}} \\
+$N$             & \textcolor{statorange}{\textbf{?}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.58\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.6cm}c}
+\toprule
+\textbf{Where an effect could come from} & $\mu_t - \mu_c$ \\
+\midrule
+Our own pilot                          & 7 \\
+A published study of a similar message & 5 \\
+That published effect, discounted for publication bias & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+
+
+## The Formula, in Code
+
+```{=latex}
+\vspace{0.6em}
+
+\begin{center}
+$\displaystyle \text{power} \;=\; \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)$
+\end{center}
+
+\vspace{0.9em}
+```
+
+```{r power-fn, echo=TRUE}
+power_calc <- function(mu_t, mu_c, sigma, N, alpha = 0.05) {
+  z  <- abs(mu_t - mu_c) * sqrt(N) / (2 * sigma)
+  cv <- qnorm(1 - alpha / 2)
+  pnorm(z - cv) + pnorm(-z - cv)     # both rejection tails
+}
+```
+
+```{=latex}
+\vspace{0.9em}
+
+\begin{center}
+\large $\Phi \;=\;$ \texttt{pnorm} \qquad\qquad $\Phi^{-1} \;=\;$ \texttt{qnorm}
+\end{center}
+```
+
+
+## Power Across a Range of $N$
+
+```{r sweep, echo=TRUE, message=FALSE, warning=FALSE}
+grid <- expand.grid(N     = seq(60, 1600, by = 10),
+                    delta = c(3, 5, 7))
+
+grid$power <- power_calc(mu_t  = 50 + grid$delta,
+                         mu_c  = 50,
+                         sigma = 20,
+                         N     = grid$N)
+
+head(grid, 3)
+```
+
+```{=latex}
+\vspace{0.4em}
+
+\begin{center}
+\small One formula, three assumptions, `r nrow(grid)` rows. Now plot \texttt{power} against \texttt{N}.
+\end{center}
+```
+
+
+## How Many Respondents Do We Need?
+
+```{r sweep-plot-setup, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+grid$delta <- factor(grid$delta, levels = c(3, 5, 7))
+nstar <- data.frame(delta = factor(c(3, 5, 7), levels = c(3, 5, 7)))
+nstar$N <- ceiling((2 * 20 * (qnorm(0.975) + qnorm(0.80)) / c(3, 5, 7))^2)
+nstar$power <- 0.80
+ramp <- c("3" = "#4A90C2", "5" = "#1F5F8B", "7" = "#0B2E52")
+```
+
+```{r sweep-plot, echo=FALSE, fig.width=7.4, fig.height=3.3, dev="png", dpi=300, fig.align="center"}
+ggplot(grid, aes(N, power, colour = delta)) +
+  geom_hline(yintercept = 0.80, linetype = "dashed",
+             colour = "#B41E1E", linewidth = 0.4) +
+  geom_line(linewidth = 0.85) +
+  geom_point(data = nstar, size = 1.9, colour = "#B41E1E") +
+  geom_text(data = nstar, aes(label = N), vjust = 1.9, hjust = -0.15,
+            size = 3, colour = "#B41E1E", show.legend = FALSE) +
+  scale_colour_manual(values = ramp, name = "Assumed effect (points):") +
+  scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+  scale_x_continuous(breaks = seq(0, 1600, 200)) +
+  labs(x = "Total respondents (N)", y = "Power") +
+  theme_minimal(base_size = 10) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.25, colour = "grey88"),
+        axis.title = element_text(colour = "grey30"),
+        legend.position = "bottom", legend.margin = margin(t = -4),
+        legend.key.width = unit(16, "pt"),
+        legend.title = element_text(colour = "grey30"))
+```
+
+\vspace{0.1em}
+
+
+
+## Your Turn: Build the Sweep in R
+
+\small Your department is considering a six-week **peer-mentoring program** for first-year students, and can randomize students into it or onto a waitlist. The outcome is end-of-year GPA. The registrar tells you first-year GPA averages **3.05**, with a standard deviation of **0.45**.
+
+\vspace{0.5em}
+
+::: {.columns}
+:::: {.column width="44%"}
+
+```{=latex}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Given}} \\
+\midrule
+$\mu_c$  & 3.05 \\
+$\sigma$ & 0.45 \\
+$\alpha$ & 0.05 \\
+\bottomrule
+\end{tabular}
+\end{center}
+```
+
+::::
+:::: {.column width="54%"}
+
+```{=latex}
+\vspace{0.4em}
+\footnotesize
+\textbf{You decide:}
+
+\vspace{0.3em}
+
+\hspace{0.4em}\textbullet~Which GPA gains are plausible?
+
+\vspace{0.2em}
+
+\hspace{0.4em}\textbullet~How many students could you enroll?
+```
+
+::::
+:::
+
+\vspace{0.4em}
+
+
+## Your Turn: One Solution
+
+```{r exercise-solution, echo=TRUE}
+grid <- expand.grid(N     = seq(50, 1000, by = 10),
+                    delta = c(0.10, 0.15, 0.20))
+grid$power <- power_calc(mu_t = 3.05 + grid$delta, mu_c = 3.05,
+                         sigma = 0.45, N = grid$N)
+
+for (d in unique(grid$delta)) {
+  ok <- grid$N[grid$delta == d & grid$power >= 0.80]
+  cat("effect", d, "GPA points -> N =", min(ok), "\n")
+}
+```
+
+\footnotesize Your effects and $N$ range will differ. The *structure* is the answer: one grid, one call, one threshold.
+
+
+## Where the Formula Runs Out
+
+\small The closed form is not general. It is designed for difference of means testing; if we want to use a more complex model, we need a different approach:
+
+\vspace{0.4em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.3cm}>{\raggedright\arraybackslash}p{7.4cm}}
+\toprule
+\textbf{It assumes} & \textbf{So it cannot handle} \\
+\midrule
+Two arms, split 50/50            & Three arms, unequal allocation \\
+One continuous, normal outcome   & Binary, counts, skewed scales \\
+A simple difference in means     & Covariates, fixed effects, IV, mixed models \\
+Independent observations         & Clustered or repeated measures \\
+Everyone recruited is analysed   & Attrition, non-response \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Power with Monte Carlo Simulation
+
+\vspace{0.6em}
+
+\small
+\begin{enumerate}
+\item \textbf{Invent a world} where your assumptions are literally true: $\mu_t - \mu_c = 7$, $\sigma = 20$, $N = 164$.
+
+\vspace{0.35em}
+
+\item \textbf{Draw one fake study} from that world and run \textit{the analysis you actually plan to run}.
+
+\vspace{0.35em}
+
+\item \textbf{Repeat} a few thousand times. Power is the share of those studies where $p < 0.05$.
+\end{enumerate}
+
+
+## What Simulation Adds to the Sweep
+
+\vspace{0.3em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{4.5cm}>{\raggedright\arraybackslash}p{5.6cm}}
+\toprule
+& \textbf{Sweep} & \textbf{Simulation} \\
+\midrule
+What varies      & Inputs to one formula & Inputs, \textit{and} the design and estimator \\
+Power comes from & A closed-form CDF & The share of fake studies that reject \\
+Cost             & Exact, instant & Approximate, seconds to minutes \\
+Works for        & Two arms, means, complete data & Anything you can write code for \\
+You also get     & One number & The whole distribution of estimates and $p$-values \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+
+\begin{center}
+\small They are not rivals. The sweep is the \textbf{outer loop}; simulation changes what fills each cell.
+\end{center}
+
+
+## Estimand and Estimator
+
+\vspace{0.4em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{5.0cm}>{\raggedright\arraybackslash}p{5.6cm}}
+\toprule
+& \textbf{What it is} & \textbf{Examples} \\
+\midrule
+\textbf{Estimand}  & The quantity you want to learn. A property of the \textit{world}. & The ATE; the effect among women; an interaction; a LATE \\
+\textbf{Estimator} & The procedure you run on data. A property of your \textit{code}. & Difference in means; OLS with covariates; 2SLS; a mixed model \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+
+
+## Anatomy of One Simulation
+
+\small Before automating anything, run the study **once**.
+
+```{r one-draw, echo=TRUE}
+set.seed(3)
+one_study <- function() {
+  z <- sample(rep(0:1, each = 82))             # RANDOMLY assign the message
+  y <- rnorm(164, mean = 50 + 7 * z, sd = 20)  # ESTIMAND: the truth is 7
+  coef(summary(lm(y ~ z)))["z", 4]             # ESTIMATOR: what you run
+}
+
+c(study_1 = one_study(), study_2 = one_study(), study_3 = one_study())
+```
+
+\begin{center}
+\small \textbf{Power is just the share of these that land under 0.05.}
+\end{center}
+
+
+## How Many Simulations Is Enough?
+
+\small A simulated power estimate is itself an estimate. Its standard error is $\sqrt{\text{power}(1-\text{power})/S}$.
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc>{\raggedright\arraybackslash}p{6.4cm}}
+\toprule
+\textbf{$S$} & \textbf{$\pm$ at power $= 0.80$} & \textbf{Good for} \\
+\midrule
+200    & 0.028 & A first look, nothing more \\
+1{,}000  & 0.013 & Exploring designs \\
+2{,}000  & 0.009 & Most teaching and prototyping \\
+10{,}000 & 0.004 & A number going in a grant or pre-registration \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small The cheap check: rerun with a different seed. If the answer moves more than you can live with, raise $S$.
+\end{center}
+
+
+## Building a Monte Carlo simulation for Power
+
+\small Keep the sweep; replace what fills the column. Run the study thousands of times and count.
+
+```{r mc-harness, echo=TRUE}
+sim_power <- function(N, tau, sigma, S = 2000) {
+  mean(replicate(S, {
+    z <- sample(rep(0:1, length.out = N))
+    y <- rnorm(N, 50 + tau * z, sigma)  # the ESTIMAND
+    coef(summary(lm(y ~ z)))["z", 4]    # the ESTIMATOR
+  }) < 0.05)
+}
+set.seed(11)
+c(simulation = sim_power(164, 7, 20),
+  formula    = power_calc(57, 50, 20, 164))
+```
+
+
+## What If I Change My Analysis Plan?
+
+\small In the survey experiment you planned to compare mean thermometer scores. Now you decide to fit a regression that adjusts for each respondent's *baseline* thermometer reading, taken before the message.
+
+\vspace{0.5em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{5.2cm}}
+\toprule
+& \textbf{What you planned} & \textbf{What you now plan} \\
+\midrule
+The code & \texttt{t.test(y \textasciitilde\ z)} & \texttt{lm(y \textasciitilde\ z + x)} \\
+Estimand & The ATE of the message & \textcolor{highlightgreen}{\textbf{the same ATE}} \\
+Estimator & Difference in means & OLS with a covariate \\
+Does the closed form describe it? & Yes & \textcolor{errorred}{\textbf{No}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\small You changed \textbf{how you will answer}, not \textbf{what you are asking}.
+\end{center}
+
+\vspace{0.2em}
+
+\scriptsize The baseline reading `x` is measured before treatment, so it is a *precision covariate*, not a confounder; it correlates about 0.6 with the outcome. Does adjusting help or hurt? **Simulate it.**
+
+
+## Branch 1: Same Estimand, Better Estimator
+
+```{r mc-covariate, echo=TRUE}
+sim_cov <- function(adjust, N = 164, S = 2000, tau = 7) {
+  mean(replicate(S, {
+    z <- sample(rep(0:1, length.out = N)); x <- rnorm(N)  # x = baseline
+    y <- 50 + tau * z + 12 * x + rnorm(N, 0, 16) # cor(x, y) = 0.6
+    fit <- if (adjust) lm(y ~ z + x) else lm(y ~ z)
+    coef(summary(fit))["z", 4]
+  }) < 0.05)
+}
+set.seed(11)
+c(unadjusted = sim_cov(FALSE), adjusted = sim_cov(TRUE))
+```
+
+\begin{center}
+\small \textbf{80\%} power at the same $N$: adjusting drops $\sigma$ from 20 to 16, at \textbf{zero} extra cost in respondents.
+\end{center}
+
+
+## The Smallest Effect the Regression Can See
+
+\small The formula does not describe `lm(y ~ z + x)`, so fix power at 80\% and sweep the **effect** by simulation, holding $N$ at 164.
+
+```{r mde-sim, echo=TRUE}
+set.seed(5)
+taus <- 5:9                                    # candidate effects, in points
+pw   <- sapply(taus, function(t) sim_cov(TRUE, S = 1000, tau = t))
+mde <- function(p, tau, S = 1000, target = 0.80) {   # fit, then invert
+  b <- coef(glm(cbind(round(p*S), S - round(p*S)) ~ log(tau), binomial))
+  exp((qlogis(target) - b[[1]]) / b[[2]])
+}
+c(setNames(round(pw, 2), taus), MDE = round(mde(pw, taus), 2))
+```
+
+\footnotesize Adjusting moves the MDE from \textbf{8.75} points to \textbf{6.9}. The closed form with $\sigma = 16$ gives 7.0.
+
+
+## What If x Is a Confounder Instead?
+
+\scriptsize Same covariate, but `z` is now **not randomized**: higher `x` makes treatment likelier. Watch the rejection rate.
+
+```{r mc-confound, echo=TRUE}
+set.seed(3)
+sim_obs <- function(adjust, N = 164, S = 2000) {
+  out <- replicate(S, {
+    x <- rnorm(N); z <- rbinom(N, 1, plogis(1.2 * x))  # z DEPENDS on x
+    y <- 50 + 7 * z + 12 * x + rnorm(N, 0, 16)         # truth is still 7
+    fit <- if (adjust) lm(y ~ z + x) else lm(y ~ z)
+    c(coef(fit)["z"], coef(summary(fit))["z", 4]) })
+  c(estimate = mean(out[1, ]), rejection = mean(out[2, ] < 0.05)) }
+obs <- rbind(`y ~ z` = sim_obs(FALSE), `y ~ z + x` = sim_obs(TRUE)); obs
+```
+
+\scriptsize The unadjusted model rejects \textbf{100\%} of the time. That is \textit{not} power --- the estimate is centred on 18.2 when the truth is 7. A rejection rate is only power once the estimator is unbiased.
+
+
+
+## Branch 2: Same Study, Different Estimand
+
+\small The message moves $g=1$ by 10 points and $g=0$ by 4. Average effect still 7; the \textbf{interaction} is 6.
+
+```{r mc-interaction, echo=TRUE}
+set.seed(11)
+p <- replicate(2000, {
+  z <- sample(rep(0:1, each = 82)); g <- rep(0:1, 82)
+  y <- rnorm(164, 50 + 4 * z + 6 * z * g + 2 * g, 20)
+  c(ate = coef(summary(lm(y ~ z)))["z", 4],
+    int = coef(summary(lm(y ~ z * g)))["z:g", 4])
+})
+rowMeans(p < 0.05)
+```
+
+\begin{center}
+\small Nothing changed but the \textbf{question}. An interaction carries twice the standard error, so it behaves like a main effect with $\sigma$ \textbf{doubled}: 80\% power needs $\approx$\textbf{1400} respondents, against 257 for the ATE.
+\end{center}
+
+
+## Power Is a Property of the Triple
+
+\vspace{0.4em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.5cm}}
+\toprule
+\textbf{Choice} & \textbf{What it is} & \textbf{What it did here} \\
+\midrule
+\textbf{Estimand}  & The quantity you are after: ATE, interaction, subgroup, LATE & $0.61 \rightarrow 0.15$ \\
+\textbf{Estimator} & The model you will actually fit & $0.61 \rightarrow 0.80$ \\
+\textbf{Design}    & $N$, allocation, blocking, what gets randomized & the lever fully in your hands \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.6em}
+
+\begin{center}
+\small Power is not a property of your sample size. It is a property of all three together. \\[0.4em]
+\textbf{What is my estimand, what estimator will I actually run, and what does \textit{that pair} need?}
+\end{center}
+
+
+## What Voids Your Calculation
+
+\small Everything so far assumed you randomize individuals, one at a time, on a continuous outcome, and analyse everyone you recruited. Break any of those and the number you just computed is wrong --- usually by a lot.
+
+\vspace{0.3em}
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{5.3cm}}
+\toprule
+\textbf{If your design has\ldots} & \textbf{Your $N$ is wrong by} & \textbf{What that looked like here} \\
+\midrule
+Groups randomized, not individuals & $\times\;\text{DEFF} = 1 + (m-1)\rho$
+  & 283 $\rightarrow$ \textcolor{errorred}{\textbf{1{,}302}} students; analysed naively, a \textcolor{errorred}{\textbf{36\%}} false-positive rate \\
+Take-up below 100\%    & $\div$ take-up$^2$      & 50\% take-up $\rightarrow$ \textbf{4$\times$} the sample: 257 $\rightarrow$ 1{,}028 \\
+Attrition              & $\div\;(1 - \text{loss})$ & 20\% loss $\rightarrow$ recruit \textbf{322} to analyse 257 \\
+A binary outcome       & $\sigma = \sqrt{p(1-p)}$  & The same 164 people: 61\% power continuous, \textbf{36\%} for 30\%$\rightarrow$42\% \\
+A subgroup or interaction & $\approx\;4\times$     & 257 $\rightarrow$ \textbf{$\sim$1{,}400} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+## Your Turn: Simulate a Design of Your Own
+
+\small Take a study you are actually planning, or one you have just read. Before writing any code, answer three questions:
+
+\vspace{0.6em}
+
+\small
+\begin{enumerate}
+\item \textbf{What is my estimand?} An average effect, a difference between groups, an effect for compliers only?
+
+\vspace{0.3em}
+
+\item \textbf{What estimator will I actually run?} A difference in means, OLS with controls, something with clustered errors?
+
+\vspace{0.3em}
+
+\item \textbf{What must I assume to simulate it?} A baseline mean, an outcome standard deviation, a plausible effect.
+\end{enumerate}
+
+\vspace{0.7em}
+
+\begin{center}
+\small Then fill in the scaffold on the next slide and sweep it over $N$.
+\end{center}
+
+
+## Your Turn: A Scaffold
+
+```{r scaffold, eval=FALSE, echo=TRUE}
+one_study <- function(N) {
+  z <- sample(rep(0:1, length.out = N))  # 1. ASSIGN: randomize treatment
+
+  y <- rnorm(N, mean = ???, sd = ???) # 2. GENERATE: your ESTIMAND
+
+  coef(summary(lm(y ~ z)))["z", 4]    # 3. ANALYSE: your ESTIMATOR
+}
+
+power_for <- function(N, S = 1000) mean(replicate(S, one_study(N)) < 0.05)
+
+sapply(seq(100, 600, by = 50), power_for)
+```
+
+\small Change line 2 and you have changed your estimand. Change line 3 and you have changed your estimator. Everything else stays put.
+
+
+## Appendix: Where 1.96 Comes From
+
+\begin{columns}[T]
+
+\begin{column}{0.30\textwidth}
+\vspace{0.6em}
+
+\begin{center}
+$\Phi^{-1}(\mathbf{0.975})$
+\end{center}
+
+\vspace{0.5em}
+
+\footnotesize
+$\Phi^{-1}$ runs the table \textbf{backwards}. You are handed an area and must find the $z$ that produces it:
+
+\vspace{0.4em}
+
+\hspace{0.5em}1. Hunt $.9750$ in the \textbf{body}
+
+\vspace{0.2em}
+
+\hspace{0.5em}2. Read off its \textbf{margins}
+
+\vspace{0.5em}
+
+Row $1.9$ plus column $.06$ gives the critical value you already know: $\mathbf{1.96}$.
+\end{column}
+
+\begin{column}{0.70\textwidth}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$z$ & .00 & .01 & .02 & .03 & .04 & .05 & \cellcolor{stataccbg}\textbf{.06} & .07 & .08 & .09 \\
+\midrule
+1.6 & .9452 & .9463 & .9474 & .9484 & .9495 & .9505 & \cellcolor{stataccbg}.9515 & .9525 & .9535 & .9545 \\
+1.7 & .9554 & .9564 & .9573 & .9582 & .9591 & .9599 & \cellcolor{stataccbg}.9608 & .9616 & .9625 & .9633 \\
+1.8 & .9641 & .9649 & .9656 & .9664 & .9671 & .9678 & \cellcolor{stataccbg}.9686 & .9693 & .9699 & .9706 \\
+\cellcolor{stataccbg}\textbf{1.9} & \cellcolor{stataccbg}.9713 & \cellcolor{stataccbg}.9719 & \cellcolor{stataccbg}.9726 & \cellcolor{stataccbg}.9732 & \cellcolor{stataccbg}.9738 & \cellcolor{stataccbg}.9744 & \cellcolor{statorange}\textbf{\color{white}.9750} & \cellcolor{stataccbg}.9756 & \cellcolor{stataccbg}.9761 & \cellcolor{stataccbg}.9767 \\
+2.0 & .9772 & .9778 & .9783 & .9788 & .9793 & .9798 & \cellcolor{stataccbg}.9803 & .9808 & .9812 & .9817 \\
+2.1 & .9821 & .9826 & .9830 & .9834 & .9838 & .9842 & \cellcolor{stataccbg}.9846 & .9850 & .9854 & .9857 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.6em}
+
+\small Start \textit{inside} the table and read outward: the mirror image of Step 2.
+\end{column}
+
+\end{columns}
+
+\vspace{0.4em}
+
+\begin{center}
+$\Phi^{-1}(0.975) = \mathbf{1.96}$: the bar the study has to clear.
+\end{center}
+
+
+## Appendix: Two Loops, Not One
+
+\small The sweep and the simulation stack. Neither replaces the other.
+
+\vspace{0.4em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{5.6cm}}
+\toprule
+& \textbf{What it loops over} & \textbf{Question it answers} \\
+\midrule
+\textbf{Outer} \newline \texttt{expand.grid} & The designs you are considering: each $N$, each estimator & ``Which study should I run?'' \\
+\textbf{Inner} \newline \texttt{replicate}   & Random draws from one fixed design & ``How often does \textit{this} study win?'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+
+```{r nesting, eval=FALSE, echo=TRUE}
+grid <- expand.grid(N = seq(120, 300, by = 30),      # OUTER
+                    adjust = c(FALSE, TRUE))
+grid$power <- mapply(function(n, a) sim_cov(a, n),   # INNER runs inside
+                     grid$N, grid$adjust)
+```
+
+
+## Appendix: Sweeping the Simulation
+
+```{r sim-sweep, echo=TRUE}
+set.seed(4); Ns <- seq(120, 300, by = 30)
+sweep_sim <- data.frame(N = Ns,
+  unadjusted = sapply(Ns, function(n) sim_cov(FALSE, n, S = 1500)),
+  adjusted   = sapply(Ns, function(n) sim_cov(TRUE,  n, S = 1500)))
+sweep_sim
+```
+
+\scriptsize Unadjusted crosses 80\% between 240 and 270; adjusted, between 150 and 180. The closed form puts the two at **257** and **165**.
+
+
+## Appendix: Finding the Cutoff by Simulation
+
+```{r sim-plot, echo=FALSE, fig.width=7.6, fig.height=1.10, dev="png", dpi=300, fig.align="center"}
+library(ggplot2)
+long <- data.frame(
+  N         = rep(sweep_sim$N, 2),
+  power     = c(sweep_sim$unadjusted, sweep_sim$adjusted),
+  estimator = rep(c("y ~ z", "y ~ z + x"), each = nrow(sweep_sim)))
+
+ggplot(long, aes(N, power, colour = estimator)) +
+  geom_hline(yintercept = 0.80, linetype = "dashed", colour = "#B41E1E",
+             linewidth = 0.4) +
+  geom_line(linewidth = 0.8) + geom_point(size = 1.7) +
+  scale_colour_manual(values = c("y ~ z" = "#4A90C2", "y ~ z + x" = "#0B2E52"),
+                      name = NULL) +
+  scale_y_continuous(limits = c(0.4, 1), breaks = seq(0.4, 1, 0.2)) +
+  labs(x = "Total respondents (N)", y = "Simulated power") +
+  theme_minimal(base_size = 8) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.25, colour = "grey88"),
+        axis.title = element_text(colour = "grey30"),
+        legend.position = "right", legend.key.width = unit(14, "pt"),
+        plot.margin = margin(2, 2, 2, 2))
+```
+
+```{r cutoff-fit, echo=TRUE}
+cutoff <- function(p, N, S = 1500, target = 0.80) {   # fit, then invert
+  b <- coef(glm(cbind(round(p*S), S - round(p*S)) ~ log(N), binomial))
+  exp((qlogis(target) - b[1]) / b[2])
+}
+round(c(adjusted   = cutoff(sweep_sim$adjusted,   sweep_sim$N),
+        unadjusted = cutoff(sweep_sim$unadjusted, sweep_sim$N)))
+```
+
+\scriptsize Do **not** run `approx()` over simulated power: noise makes the curve non-monotone. Fit a monotone curve, invert that.
+
+
+## Appendix: The Same Covariate, Two Different Jobs
+
+\small Which job `x` is doing depends entirely on how `z` was assigned.
+
+\vspace{0.5em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{4.7cm}>{\raggedright\arraybackslash}p{4.9cm}}
+\toprule
+& \textbf{Randomized:} $x$ is a \textit{precision covariate} & \textbf{Observational:} $x$ is a \textit{confounder} \\
+\midrule
+Why include it & Optional. Randomization already gives the right answer. & Mandatory. Without it the answer is wrong. \\
+Estimate, \texttt{y \textasciitilde\ z} & 7.00 \; \footnotesize(truth is 7) & \textcolor{errorred}{\textbf{`r round(obs["y ~ z", "estimate"], 2)`}} \; \footnotesize(truth is 7) \\
+Adding $x$ & Soaks up outcome variance $\Rightarrow$ \textcolor{highlightgreen}{\textbf{more power}} & Also soaks up \textit{treatment} variance $\Rightarrow$ \textcolor{errorred}{\textbf{less power}} \\
+Power, \texttt{y \textasciitilde\ z + x} & \textbf{0.80} & `r round(obs["y ~ z + x", "rejection"], 2)` \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Appendix: When You Randomize Groups, Not People
+
+\small Assign whole classrooms, clinics, or villages and observations within a cluster are correlated. Effective sample size shrinks by the \textbf{design effect}:
+
+\vspace{0.3em}
+
+\begin{center}
+$\text{DEFF} \;=\; 1 + (m - 1)\,\rho$ \qquad \footnotesize $m$ = cluster size, \; $\rho$ = intra-cluster correlation
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{7.2cm}c}
+\toprule
+\textbf{GPA study,} $\delta = 0.15$ & \textbf{Students needed} \\
+\midrule
+Randomize individual students                        & 283 \\
+Randomize classrooms of 25, $\rho = 0.15$ (DEFF 4.6) & \textbf{1300} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small That checkbox we told you to leave unchecked in the EGAP app? \textit{This is what it does.}
+\end{center}
+
+
+## Appendix: Clustering in Simulation
+
+\small The danger: the naive analysis still returns a number, and the number looks fine.
+
+```{r mc-cluster, echo=TRUE}
+set.seed(7)
+n_clus <- 12; m <- 25                  # 300 students in 12 classrooms
+sb <- 0.45 * sqrt(0.15); sw <- 0.45 * sqrt(0.85)
+p <- replicate(1500, {
+  zc <- sample(rep(0:1, each = n_clus / 2))  # assign CLASSROOMS, not students
+  u  <- rnorm(n_clus, 0, sb)           # classroom-level shock
+  y  <- rnorm(n_clus * m, rep(3.05 + 0.15 * zc + u, each = m), sw)
+  id <- rep(1:n_clus, each = m)
+  c(as_individuals = t.test(y ~ rep(zc, each = m))$p.value,
+    as_clusters    = t.test(tapply(y, id, mean) ~ zc)$p.value)
+})
+rowMeans(p < 0.05)
+```
