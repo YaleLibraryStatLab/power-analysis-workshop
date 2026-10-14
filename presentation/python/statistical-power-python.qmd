@@ -232,6 +232,18 @@ plt.show()
   - Better to treat as a heuristic, rather than an explicit benchmark.
 
 
+## Type S and Type M Errors
+
+- Underpowered studies do more than miss real effects: when they *do* find a significant effect, that estimate is likely to be wrong.
+- A significant estimate can be wrong in two ways:
+  - *Type S (sign)*: the estimate has the opposite sign of the true effect. At $6\%$ power, $24\%$ of significant estimates do.
+  - *Type M (magnitude)*: the estimate overstates the true effect. At $6\%$ power, significant estimates are $9.5$ times too large on average.
+
+\vspace{0.4em}
+
+\scriptsize Source: Gelman and Carlin (2014), \textit{Beyond Power Calculations: Assessing Type S (Sign) and Type M (Magnitude) Errors}.
+
+
 ## Core Notation
 
 In order to estimate statistical power, we need four qualities:
@@ -1517,3 +1529,14 @@ for i in range(1500):
             ttest_ind(cm[zc == 1], cm[zc == 0], equal_var=False).pvalue)
 pd.Series(dict(zip(["as_individuals", "as_clusters"], (p < 0.05).mean(axis=0))))
 ```
+
+
+## References
+
+\small
+
+Coppock, A. \textit{10 Things to Know About Statistical Power}. Evidence in Governance and Politics (EGAP). \url{https://egap.org/resource/10-things-to-know-about-statistical-power/}
+
+\vspace{0.8em}
+
+Gelman, A., and Carlin, J. (2014). Beyond Power Calculations: Assessing Type S (Sign) and Type M (Magnitude) Errors. \textit{Perspectives on Psychological Science}, 9(6), 641--651. \url{https://doi.org/10.1177/1745691614551642}
