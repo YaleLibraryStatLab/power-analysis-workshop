@@ -20,10 +20,10 @@ simulate_power <- function(n_sims, generate, analyze, success) {
 #' Step 1: Describe your study -------------------------------------------------
 # These are your educated guesses
 
-baseline <- ___ # average outcome in the control group
-true_effect <- ___ # the effect you hope to detect (treatment minus control)
-noise_sd <- ___ # how much the outcome varies from subject to subject
-n_start <- ___ # a total sample size to try first
+baseline <- ___ # average outcome in control group
+true_effect <- ___ #  effect you hope to detect
+noise_sd <- ___ # how much outcome varies from subject to subject
+n_start <- ___ # total sample size to try first
 
 
 #' Step 2: generate() ----------------------------------------------------------
