@@ -1,0 +1,2117 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\usetheme[]{default}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\newif\ifbibliography
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+% ============================================================
+% StatLab Beamer Theme — Custom Header
+% Mirrors the color scheme and layout of custom.scss (RevealJS)
+% ============================================================
+
+% ── COLORS (matches custom.scss variables) ───────────────────
+\usepackage{xcolor}
+\usepackage{pifont}
+
+\definecolor{statprimary}{HTML}{2c3e50}    % dark gray-blue (body text)
+\definecolor{statsecondary}{HTML}{2980b9}  % blue (structure, links)
+\definecolor{statyale}{HTML}{00356b}       % Yale blue (footer)
+
+% Box backgrounds
+% Two-color system: Yale blue + statsecondary blue dominate.
+% Orange (#FF6600) reserved for key warnings / key findings only.
+\definecolor{stataccbg}{HTML}{e8f4f8}      % light cyan bg  — default block body
+\definecolor{statorange}{HTML}{FF6600}     % orange         — alert / key finding header
+\definecolor{statorangebg}{HTML}{FFF2E6}   % pale orange bg — alert body
+\definecolor{statexbg}{HTML}{e6eef5}       % pale Yale-blue bg — example / Sam block body
+\definecolor{statproof}{HTML}{95a5a6}      % gray           — proof (rarely used)
+\definecolor{statproofbg}{HTML}{f9f9f9}    % light gray bg
+
+% ── FONT: CMU Serif (LaTeX default) ─────────────────────────
+% Switch Beamer from its default sans-serif to the classic serif.
+\usefonttheme{serif}
+% For XeLaTeX, explicitly select the OpenType CMU Serif face:
+\setmainfont{CMU Serif}
+
+% ── BEAMER COLORS ────────────────────────────────────────────
+
+% Frame chrome
+\setbeamercolor{frametitle}{bg=statprimary, fg=white}
+\setbeamercolor{title}{fg=statprimary}
+\setbeamercolor{subtitle}{fg=statsecondary}
+\setbeamercolor{author}{fg=statprimary!70}
+\setbeamercolor{date}{fg=statprimary!70}
+\setbeamercolor{normal text}{fg=statprimary, bg=white}
+\setbeamercolor{structure}{fg=statsecondary}
+
+% Bullets and lists
+\setbeamercolor{item}{fg=statsecondary}
+\setbeamercolor{subitem}{fg=statsecondary!70}
+\setbeamercolor{enumerate item}{fg=statsecondary}
+\setbeamercolor{enumerate subitem}{fg=statsecondary!70}
+
+% Bullet shape: filled circle (level 1), open circle (level 2), dash (level 3)
+\setbeamertemplate{itemize item}{\small$\bullet$}
+\setbeamertemplate{itemize subitem}{\small$\circ$}
+\setbeamertemplate{itemize subsubitem}{\small\textendash}
+
+% Default block — blue, mirrors .theorem / .lemma / .corollary
+\setbeamercolor{block title}{fg=white, bg=statsecondary}
+\setbeamercolor{block body}{bg=stataccbg, fg=statprimary}
+
+% Alert block — orange (#FF6600), reserved for key warnings / findings
+\setbeamercolor{block title alerted}{fg=white, bg=statorange}
+\setbeamercolor{block body alerted}{bg=statorangebg, fg=statprimary}
+
+% Example block — Yale blue, used for Sam callbacks and contextual examples
+\setbeamercolor{block title example}{fg=white, bg=statyale}
+\setbeamercolor{block body example}{bg=statexbg, fg=statprimary}
+
+% ── FONT SIZES ───────────────────────────────────────────────
+\setbeamerfont{title}{size=\LARGE, series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamerfont{block title}{size=\normalsize, series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+
+% ── FRAME TITLE ──────────────────────────────────────────────
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip%
+  \begin{beamercolorbox}[%
+    wd=\paperwidth, ht=2.6ex, dp=0.9ex, leftskip=0.9em%
+  ]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle%
+  \end{beamercolorbox}%
+}
+
+% ── HEADLINE: presentation title, top-right (hidden on title slide) ──
+\setbeamercolor{headline}{fg=statprimary!55, bg=white}
+\setbeamertemplate{headline}{%
+  \ifnum\insertframenumber>1%
+    \begin{beamercolorbox}[wd=\paperwidth, ht=2.2ex, dp=0.5ex]{headline}%
+      \hfill%
+      \usebeamercolor[fg]{headline}{\fontsize{6.5}{8}\selectfont\inserttitle}%
+      \hspace*{0.9em}%
+    \end{beamercolorbox}%
+  \else%
+    \vspace{2.7ex}% reserve same height on title slide so frame title aligns
+  \fi%
+}
+
+% ── FOOTER: branding + slide number (no logo) ────────────────
+\setbeamertemplate{footline}{%
+  {\color{statprimary!25}\hrule height 0.4pt}%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=2.4ex, dp=1.4ex]{footline}%
+    \hspace*{0.9em}%
+    \textcolor{statyale}{\fontfamily{qpl}\selectfont Yale Library $|$ StatLab}%
+    \hfill%
+    \textcolor{statprimary!50}{\insertframenumber\,/\,\inserttotalframenumber}%
+    \hspace*{0.9em}%
+  \end{beamercolorbox}%
+}
+
+% ── IMAGE CONSTRAINTS ────────────────────────────────────────
+% Keep images within the content area so they never bleed into the footer.
+% max-width = full text column; max-height = 65 % of the frame text height.
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth, height=0.65\textheight, keepaspectratio}
+
+% ── TITLE PAGE ───────────────────────────────────────────────
+\setbeamertemplate{title page}{%
+  \vspace*{2.5em}%
+  \begin{beamercolorbox}[sep=0pt, left]{title}%
+    \usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par%
+  \end{beamercolorbox}%
+  \vspace*{0.5em}%
+  \begin{beamercolorbox}[sep=0pt, left]{subtitle}%
+    \usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par%
+  \end{beamercolorbox}%
+  \vspace*{1.8em}%
+  \begin{beamercolorbox}[sep=0pt, left]{author}%
+    \usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par%
+  \end{beamercolorbox}%
+  \vspace*{0.4em}%
+  \begin{beamercolorbox}[sep=0pt, left]{date}%
+    \usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par%
+  \end{beamercolorbox}%
+}
+
+% ── CUSTOM ENVIRONMENTS ──────────────────────────────────────
+% Use these inside raw LaTeX blocks (```{=latex}) in your .qmd.
+% Each mirrors the matching CSS class from the RevealJS theme.
+
+% Definition — Yale blue (consistent with two-color palette)
+\newenvironment{definitionblock}[1][Definition]{%
+  \begingroup%
+  \setbeamercolor{block title}{fg=white, bg=statyale}%
+  \setbeamercolor{block body}{bg=statexbg, fg=statprimary}%
+  \begin{block}{#1}%
+}{%
+  \end{block}%
+  \endgroup%
+}
+
+% Lemma — blue, mirrors .lemma (same as default block)
+\newenvironment{lemmablock}[1][Lemma]{%
+  \begingroup%
+  \begin{block}{#1}%
+}{%
+  \end{block}%
+  \endgroup%
+}
+
+% Corollary — blue, mirrors .corollary (same as default block)
+\newenvironment{corollaryblock}[1][Corollary]{%
+  \begingroup%
+  \begin{block}{#1}%
+}{%
+  \end{block}%
+  \endgroup%
+}
+
+% Proof with QED square — gray, mirrors .proof
+\newenvironment{proofblock}[1][Proof]{%
+  \begingroup%
+  \setbeamercolor{block title}{fg=white, bg=statproof}%
+  \setbeamercolor{block body}{bg=statproofbg, fg=statprimary}%
+  \begin{block}{\textit{#1}}%
+  \itshape%
+}{%
+  \hfill$\square$%
+  \end{block}%
+  \endgroup%
+}
+
+% ── Workshop slide packages ───────────────────────────────────────────────
+\usepackage{listings}
+\usepackage{forest}
+\usepackage{tikz}
+\usetikzlibrary{arrows,arrows.meta,positioning,shapes.geometric,calc}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{colortbl}   % \cellcolor / \rowcolor for highlighting table lookups
+
+% ── Workshop color definitions ────────────────────────────────────────────
+% Inline semantic colors (used in tables/code for before/after comparisons)
+\definecolor{errorred}{RGB}{180,30,30}       % red  — bad examples, error states
+\definecolor{highlightgreen}{RGB}{0,130,80}  % green — good examples, cached targets
+\definecolor{commentgray}{RGB}{120,120,120}  % gray — code comments
+\definecolor{warnorange}{RGB}{200,100,0}     % warm orange — string literals in code
+\definecolor{lightblue}{RGB}{220,235,255}    % light blue — tikz fill
+
+% ── Listings: tiny font, StatLab color accents ────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\tiny,
+  breaklines=true,
+  frame=single,
+  framerule=0.4pt,
+  framesep=3pt,
+  xleftmargin=8pt,
+  xrightmargin=4pt,
+  showstringspaces=false,
+  commentstyle=\color{commentgray}\itshape,
+  keywordstyle=\color{statsecondary}\bfseries,
+  stringstyle=\color{warnorange},
+  numbers=left,
+  numberstyle=\tiny\color{gray!60},
+  numbersep=5pt,
+  tabsize=2,
+  aboveskip=3pt,
+  belowskip=3pt,
+}
+
+% ── Forest dirtree style ──────────────────────────────────────────────────
+\forestset{
+  dirtree/.style={
+    for tree={
+      font=\ttfamily\scriptsize,
+      grow'=0,
+      child anchor=west,
+      parent anchor=south,
+      anchor=west,
+      calign=first,
+      inner sep=1pt,
+      outer sep=0pt,
+      edge path={
+        \noexpand\path [draw, \forestoption{edge}]
+        (!u.south west) +(7.5pt,0) |- (.child anchor)
+        \forestoption{edge label};
+      },
+      before typesetting nodes={
+        if n=1{insert before={[,phantom]}}{}
+      },
+      fit=band,
+      before computing xy={l=15pt},
+    },
+  }
+}
+
+% ── Quarto code block font size override ──────────────────────────────────
+% Load fancyvrb explicitly so \DefineVerbatimEnvironment is always available,
+% whether or not pandoc includes code blocks that trigger its auto-load.
+\usepackage{fancyvrb}
+\AtBeginDocument{%
+  % Source code (syntax-highlighted input)
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{%
+    commandchars=\\\{\},%
+    fontsize=\small%
+  }%
+  % Printed results (plain verbatim) — matched to the input so a chunk
+  % and its output read at one consistent size.
+  \RecustomVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\small}%
+}
+
+% ── Two-column shorthand colors for code comparisons ─────────────────────
+\newcommand{\badlabel}{{\color{errorred}\textbf{$\boldsymbol{\times}$ Before}}}
+\newcommand{\goodlabel}{{\color{highlightgreen}\textbf{\ding{51}~After}}}
+
+% ── ORR Workshop rebuild macros (2025) ────────────────────────────────────
+
+% Yale blue alias (for \color{yale})
+\colorlet{yale}{statyale}
+
+% Figure placeholder — reserves whitespace and flags human action needed
+\newcommand{\figplaceholder}[1]{%
+  \begin{center}%
+  \fbox{\begin{minipage}{0.82\textwidth}%
+  \centering\vspace{1.4cm}%
+  {\large\color{gray} [FIGURE: #1]}\\[0.3cm]%
+  {\small\color{gray}\itshape See [HUMAN INSTRUCTION] comment in source}%
+  \vspace{1.4cm}%
+  \end{minipage}}%
+  \end{center}%
+}
+
+% Key finding callout (red alert block)
+\newcommand{\findingbox}[1]{%
+  \begin{alertblock}{Key Finding}%
+  #1%
+  \end{alertblock}%
+}
+
+% Title-less callout — example-block coloring, no title bar.
+% Use where a block would otherwise invent a second heading under the frame title.
+\newenvironment{notebox}{%
+  \begin{center}%
+  \begin{minipage}{0.95\textwidth}%
+  \begin{beamercolorbox}[wd=\textwidth, sep=6pt]{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \end{minipage}%
+  \end{center}%
+}
+
+% Inline pain/solution markers
+\newcommand{\pain}[1]{{\color{errorred}\textbf{Problem:}} #1}
+\newcommand{\solutiontag}[1]{{\color{yale}\textbf{Solution:}} #1}
+
+% Parker Lab scenario callback — green example block
+\newcommand{\samcallback}[1]{%
+  \begin{exampleblock}{Parker Lab --- Sam's Problem}%
+  \small #1%
+  \end{exampleblock}%
+}
+
+% ── Named lstlisting styles ────────────────────────────────────────────────
+% Override the global \tiny with \scriptsize for readability on slides.
+
+\lstdefinestyle{Rcode}{%
+  language=R,%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=single,%
+  breaklines=true,%
+  breakatwhitespace=false,%
+  showstringspaces=false,%
+  numbers=none,%
+}
+
+\lstdefinestyle{bashcode}{%
+  language=bash,%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=single,%
+  breaklines=true,%
+  numbers=none,%
+}
+
+\lstdefinestyle{Pythoncode}{%
+  language=Python,%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=single,%
+  breaklines=true,%
+  numbers=none,%
+}
+
+\lstdefinestyle{jsoncode}{%
+  language={},%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=single,%
+  breaklines=true,%
+  numbers=none,%
+  morestring=[b]",%
+  stringstyle=\color{warnorange},%
+}
+
+\lstdefinestyle{yamlcode}{%
+  language={},%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=single,%
+  breaklines=true,%
+  numbers=none,%
+  morecomment=[l]{\#},%
+  commentstyle=\color{commentgray}\itshape,%
+}
+
+\lstdefinestyle{textcode}{%
+  language={},%
+  basicstyle=\ttfamily\scriptsize,%
+  backgroundcolor=\color{gray!8},%
+  frame=none,%
+  breaklines=true,%
+  numbers=none,%
+}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Statistical Power},
+  pdfauthor={Ted Ellsworth, PhD; Cole Brookson, MSc},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Statistical Power}
+\author{Ted Ellsworth, PhD \and Cole Brookson, MSc}
+\date{2026-10-15}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Free statistical consulting for Yale researchers}
+\phantomsection\label{free-statistical-consulting-for-yale-researchers}
+\vspace{2.8em}
+
+\begin{center}
+
+\large
+Study design $\cdot$ analysis $\cdot$ visualization $\cdot$ writing.
+
+\vspace{1.4em}
+
+\normalsize
+Walk-ins, appointments, and workshops --- free for all Yale affiliates.
+
+\vspace{2.8em}
+
+\textcolor{statsecondary}{%
+  \large\textbf{library.yale.edu/statlab}%
+}
+
+\end{center}
+\end{frame}
+
+\begin{frame}{Introduction}
+\phantomsection\label{introduction}
+\vspace{1.4em}
+
+\begin{center}
+\large A committee, a reviewer, an IRB, or a funder asks: \textbf{how many subjects do you need?}
+\end{center}
+
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{./images/power-meme.png}
+
+}
+
+\caption{\label{fig-meme}All problems are solved with more power.}
+
+\end{figure}%
+\end{frame}
+
+\begin{frame}{Schedule}
+\phantomsection\label{schedule}
+\vspace{0.3em}
+
+Leaving this blank until we finalize
+\end{frame}
+
+\begin{frame}{Learning Objectives}
+\phantomsection\label{learning-objectives}
+\vspace{0.3em}
+
+\small By the end of the session you should be able to:
+
+\vspace{0.4em}
+
+\begin{center}
+\begin{enumerate}
+  \item Describe the formal definition of statistical power, and relate it to other quantities of interest 
+  \item Compute power by hand and with a simple online calculator
+  \item Understand how to perform a "sweep" over a grid to identify a sample size 
+  \item Generalize the formal definition of statistical power to an agnostic view of the "False negative" problem
+  \item Calculate power from a closed form in the classic hypothesis testing framing 
+  \item Understand and design an agnostic power calculation to quantify effect size recovery in an arbitrary model
+\end{enumerate}
+\end{center}
+\end{frame}
+
+\begin{frame}{False Negatives and False Positives (Type I and Type II
+Errors)}
+\phantomsection\label{false-negatives-and-false-positives-type-i-and-type-ii-errors}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item
+  Most diagnostic statistics seek to identify two types of errors:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{False Positive} (\(\alpha\), Type I) refer to the probability
+    that you will claim an effect is \emph{present} when the
+    \textbf{null hypothesis is true}.
+  \item
+    \emph{False Negatives} (\(\beta\), Type II) refer to the probability
+    that you will claim an effect is \emph{absent} when the \textbf{null
+    hypothesis is false}.
+  \end{itemize}
+\item
+  Power is what is left over from a false negative error:
+  \(\text{power} = 1 - \beta\).
+\end{itemize}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{./images/cohen.png}
+
+}
+
+\caption{\label{fig-cohen}Dr.~Jacob Cohen (1923-1998)}
+
+\end{figure}%
+\end{column}
+\end{columns}
+
+\begin{center}
+Power is \textbf{the probability of rejecting the null hypothesis when it is in fact false and should be rejected.}
+\end{center}
+\end{frame}
+
+\begin{frame}{Type S and Type M Errors}
+\phantomsection\label{type-s-and-type-m-errors}
+\begin{itemize}
+\tightlist
+\item
+  Underpowered studies do more than miss real effects: when they
+  \emph{do} find a significant effect, that estimate is likely to be
+  wrong.
+\item
+  A significant estimate can be wrong in two ways:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Type S (sign)}: the estimate has the opposite sign of the true
+    effect. At \(6\%\) power, \(24\%\) of significant estimates do.
+  \item
+    \emph{Type M (magnitude)}: the estimate overstates the true effect.
+    At \(6\%\) power, significant estimates are \(9.5\) times too large
+    on average.
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.4em}
+
+\scriptsize Source: Gelman and Carlin (2014),
+\textit{Beyond Power Calculations: Assessing Type S (Sign) and Type M (Magnitude) Errors}.
+\end{frame}
+
+\begin{frame}{What Power Looks Like}
+\phantomsection\label{what-power-looks-like}
+\begin{center}
+\includegraphics{statistical-power-combined_files/figure-beamer/power-picture-1.png}
+\end{center}
+
+\vspace{-0.2em}
+
+\begin{center}
+\footnotesize \textcolor{errorred}{\textbf{Red}} is the study you would run if there were no effect; the shaded sliver past 1.96 is $\alpha$ --- the false positives you agreed to tolerate. \textcolor{statsecondary}{\textbf{Blue}} is the study you expect if the effect is real; \textbf{the shaded area past the same line is power}.
+\end{center}
+\end{frame}
+
+\begin{frame}{Traditional Statistical Power \& Its Ingredients}
+\phantomsection\label{traditional-statistical-power-its-ingredients}
+\vskip0pt plus 1filll
+
+So what do we need to actually calculate this? Well, the constituent
+components to calculate \(1 - \beta\) are:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{$\alpha$, the significance criterion}
+\item
+  \textbf{$N$, the sample size}
+\item
+  \textbf{$\delta$, the population effect size} \vskip0pt plus 1filll
+\end{itemize}
+
+\begin{center}
+\textit{So,} you must be thinking, \textit{what's the formula?!}
+
+\end{center}
+\end{frame}
+
+\begin{frame}{Traditional Statistical Power \& Its Ingredients}
+\phantomsection\label{traditional-statistical-power-its-ingredients-1}
+\begin{center}
+\Large
+There isn't a formula for the calculation of power. There are many!
+\end{center}
+\end{frame}
+
+\begin{frame}{Core Notation}
+\phantomsection\label{core-notation}
+In order to estimate statistical power, we need four properties:
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{7.9cm}}
+\toprule
+\textbf{Symbol} & \textbf{Quality} & \textbf{What it is} \\
+\midrule
+$N$              & Sample size        & How many subjects you collect in total. \\
+$\mu_t - \mu_c$  & Effect size        & The true difference between the treatment and control means: the \textit{signal}. \\
+$\sigma$         & Standard deviation & How much outcomes vary from one another: the \textit{noise}. \\
+$\alpha$         & Significance level & The Type I error rate you are willing to tolerate; it sets the evidence threshold. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+
+\begin{center}
+\small Note we will use $\mu_t - \mu_c$ throughout to denote effect size. Where space is tight --- in code, and in the appendix --- we abbreviate it $\delta$. 
+\end{center}
+\end{frame}
+
+\begin{frame}{The Three Ingredients of Statistical Power}
+\phantomsection\label{the-three-ingredients-of-statistical-power}
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}cc>{\raggedright\arraybackslash}p{6.2cm}}
+\toprule
+\textbf{Ingredient} & \textbf{Symbol} & \textbf{Control?} & \textbf{What it does} \\
+\midrule
+Strength of the treatment & $\mu_t - \mu_c$ & Partly & Dose, framing, and duration are yours to set; a stronger treatment is easier to detect. \\
+Background noise & $\sigma$ & Partly & Noisier outcomes bury the signal, but better measurement and covariates quiet it. \\
+Experimental design & $N$, $\alpha$ & \textbf{Yes} & Sample size, randomization scheme, and covariate adjustment. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Let's look at a case where we can find a closed form}
+\phantomsection\label{lets-look-at-a-case-where-we-can-find-a-closed-form}
+The formula depends entirely on what \emph{specific} test you want to
+run. Here's an example. Let's make the following assumptions:
+
+\begin{enumerate}
+\tightlist
+\item
+  We have a completely randomized experiment, with two groups are
+  selected to form a binary treatment, each group containing \(N \ 2\)
+\item
+  Assume the outcome variable is normally distributed, and the control
+  group has mean \(\mu_c\) and the treatment group has \(\mu_t\)
+\item
+  The two groups have a shared standard deviation, \(\sigma\)
+\end{enumerate}
+
+We now say we want to perform a difference of means test, in the
+two-tailed sense
+\end{frame}
+
+\begin{frame}{Let's look at a case where we can find a closed form}
+\phantomsection\label{lets-look-at-a-case-where-we-can-find-a-closed-form-1}
+Say we have the following hypothetical situation where we want to
+compute power:
+
+\begin{itemize}
+\tightlist
+\item
+  A school is piloting a new \textbf{tutoring program}, and wants to
+  know if it improves end-of-term test scores (out of 100)
+\item
+  Students are randomized into two groups, with one half getting
+  tutoring
+\item
+  Untutored students average \(\mu_c = 72\)
+\item
+  The school will consider the program ``worth it'', if tutoring gets
+  average scores to \(\mu_t = 75\)
+\item
+  Scores vary with \(\sigma = 10\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Let's look at a case where we can find a closed form}
+\phantomsection\label{lets-look-at-a-case-where-we-can-find-a-closed-form-2}
+Say we have the following hypothetical situation where we want to
+compute power:
+
+\begin{itemize}
+\tightlist
+\item
+  A school is piloting a new \textbf{tutoring program}, and wants to
+  know if it improves end-of-term test scores (out of 100)
+\item
+  Students are randomized into two groups, with one half getting
+  tutoring
+\item
+  Untutored students average \(\mu_c = 72\)
+\item
+  The school will consider the program ``worth it'', if tutoring gets
+  average scores to \(\mu_t = 75\)
+\item
+  Scores vary with \(\sigma = 10\)
+\end{itemize}
+
+\begin{center}
+Luckily, in such a simple form, there's a nice asymptotic approximation for the power of the experiment
+\end{center}
+\end{frame}
+
+\begin{frame}{Step 1: Do the Arithmetic}
+\phantomsection\label{step-1-do-the-arithmetic}
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)
+   && \text{\small the formula} \\[0.25em]
+&= \Phi\!\left( \frac{7\,\sqrt{164}}{2(20)} \;-\; \textcolor{statsecondary}{1.96} \right)
+   && \text{\small plug in; \;\; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.24}} \;-\; 1.96 \right) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{0.28})}
+   && \text{\small $7 \times 12.81 / 40 = 2.24$}
+\end{align*}
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+$\underbrace{\mathbf{2.24}}_{\text{what you expect}}$ \qquad
+$\underbrace{\mathbf{1.96}}_{\text{what you need}}$ \qquad
+$\underbrace{\mathbf{0.28}}_{\text{all the room you have}}$
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\scriptsize A thin margin means an unreliable study. One lookup turns $\Phi(0.28)$ into a number. \\
+(Where does $1.96$ come from? Running the $z$-table \textit{backwards} --- see the appendix.)
+\end{center}
+\end{frame}
+
+\begin{frame}{Step 2: Read the Answer Off the Table}
+\phantomsection\label{step-2-read-the-answer-off-the-table}
+\begin{columns}[T]
+
+\begin{column}{0.30\textwidth}
+\vspace{0.6em}
+
+\begin{center}
+$\text{power} = \Phi(\mathbf{0.28})$
+\end{center}
+
+\vspace{0.5em}
+
+\footnotesize
+Split the $z$-score across the two margins of the table:
+
+\vspace{0.4em}
+
+\hspace{0.5em}$\mathbf{0.2}\;$ selects the \textbf{row}
+
+\vspace{0.2em}
+
+\hspace{0.5em}$\mathbf{0.08}$ selects the \textbf{column}
+
+\vspace{0.5em}
+
+The cell where they meet is the area to the \textit{left} of $z$, which is exactly the power.
+\end{column}
+
+\begin{column}{0.70\textwidth}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$z$ & .00 & .01 & .02 & .03 & .04 & .05 & .06 & .07 & \cellcolor{stataccbg}\textbf{.08} & .09 \\
+\midrule
+0.0 & .5000 & .5040 & .5080 & .5120 & .5160 & .5199 & .5239 & .5279 & \cellcolor{stataccbg}.5319 & .5359 \\
+0.1 & .5398 & .5438 & .5478 & .5517 & .5557 & .5596 & .5636 & .5675 & \cellcolor{stataccbg}.5714 & .5753 \\
+\cellcolor{stataccbg}\textbf{0.2} & \cellcolor{stataccbg}.5793 & \cellcolor{stataccbg}.5832 & \cellcolor{stataccbg}.5871 & \cellcolor{stataccbg}.5910 & \cellcolor{stataccbg}.5948 & \cellcolor{stataccbg}.5987 & \cellcolor{stataccbg}.6026 & \cellcolor{stataccbg}.6064 & \cellcolor{statorange}\textbf{\color{white}.6103} & \cellcolor{stataccbg}.6141 \\
+0.3 & .6179 & .6217 & .6255 & .6293 & .6331 & .6368 & .6406 & .6443 & \cellcolor{stataccbg}.6480 & .6517 \\
+0.4 & .6554 & .6591 & .6628 & .6664 & .6700 & .6736 & .6772 & .6808 & \cellcolor{stataccbg}.6844 & .6879 \\
+0.5 & .6915 & .6950 & .6985 & .7019 & .7054 & .7088 & .7123 & .7157 & \cellcolor{stataccbg}.7190 & .7224 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+
+\begin{center}
+\large $\text{power} \;=\; \Phi(0.28) \;=\; \textcolor{statorange}{\mathbf{0.61}}$
+\end{center}
+\end{frame}
+
+\begin{frame}{The Smallest Effect This Study Can See}
+\phantomsection\label{the-smallest-effect-this-study-can-see}
+\small We now know what this design does with a 7-point effect. The next
+question is what it \textit{can} do: fix power at 80\% and solve the
+same formula for the effect instead of for power.
+
+\vspace{0.3em}
+
+\begin{center}
+$\displaystyle \text{MDE} \;=\; \underbrace{\left(\Phi^{-1}\!\left(1-\tfrac{\alpha}{2}\right) + \Phi^{-1}(0.80)\right)}_{1.96 \;+\; 0.84 \;=\; 2.80} \;\times\; \underbrace{\frac{2\sigma}{\sqrt{N}}}_{\text{standard error}}$
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{ccc}
+\toprule
+$N$ & \textbf{Smallest detectable effect} & \textbf{In standard deviations} \\
+\midrule
+\textcolor{statorange}{\textbf{164}} & \textcolor{statorange}{\textbf{8.75 points}} & \textcolor{statorange}{\textbf{0.44$\sigma$}} \\
+257  & 6.99 & 0.35$\sigma$ \\
+400  & 5.60 & 0.28$\sigma$ \\
+800  & 3.96 & 0.20$\sigma$ \\
+1396 & 3.00 & 0.15$\sigma$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\small Pilot assumes $\mu_t - \mu_c = \mathbf{7}$. \qquad This design detects $\textcolor{statorange}{\mathbf{8.75}}$ and up.
+\end{center}
+\end{frame}
+
+\begin{frame}{Check: Put 8.75 Back Through the Formula}
+\phantomsection\label{check-put-8.75-back-through-the-formula}
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{8.75\,\sqrt{164}}{2(20)} \;-\; 1.96 \right)
+   && \text{\small the MDE in place of the pilot's effect} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.80}} \;-\; 1.96 \right) \;=\; \Phi(\textcolor{statsecondary}{\mathbf{0.84}})
+   && \text{\small $8.75 \times 12.81 / 40 = 2.80$} \\[0.25em]
+&= \mathbf{0.80}
+   && \text{\small row $0.8$, column $.04 \to .7995$}
+\end{align*}
+
+\vspace{0.4em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{6.6cm}c}
+\toprule
+\textbf{Pin these three} & \textbf{Get} \\
+\midrule
+$N = 164$, \; $\sigma = 20$, \; effect $= 7$      & power $= 0.61$ \\
+$N = 164$, \; $\sigma = 20$, \; power $= 0.80$    & effect $= 8.75$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Your Turn: Is the Tutoring Program Worth Studying?}
+\phantomsection\label{your-turn-is-the-tutoring-program-worth-studying}
+\vspace{0.5em}
+
+\begin{notebox}
+\small A colleague is evaluating a new tutoring program. \textbf{400 students} will be randomly assigned, 200 to tutoring and 200 to business as usual, with final exam score as the outcome. Past cohorts averaged \textbf{72} points with a standard deviation of \textbf{10}, and the program is expected to add \textbf{3} points.
+\end{notebox}
+
+\vspace{0.7em}
+
+\begin{center}
+\large \textbf{What is the power of this design?}
+\end{center}
+
+\vspace{0.7em}
+
+\begin{columns}[c]
+
+\begin{column}{0.46\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{cc}
+\toprule
+\textbf{Symbol} & \textbf{Value} \\
+\midrule
+$N$      & 400  \\
+$\mu_t$  & 75   \\
+$\mu_c$  & 72   \\
+$\sigma$ & 10   \\
+$\alpha$ & 0.05, two-sided \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.50\textwidth}
+\footnotesize
+The formula and the $z$-table are on your \textbf{handout}.
+
+\vspace{0.6em}
+
+Work it in three moves:
+
+\vspace{0.3em}
+
+\hspace{0.4em}1. Compute what you \textbf{expect}
+
+\vspace{0.2em}
+
+\hspace{0.4em}2. Subtract what you \textbf{need}
+
+\vspace{0.2em}
+
+\hspace{0.4em}3. Look the difference up
+\end{column}
+
+\end{columns}
+\end{frame}
+
+\begin{frame}{Your Turn: The Solution}
+\phantomsection\label{your-turn-the-solution}
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|75 - 72|\,\sqrt{400}}{2(10)} \;-\; \Phi^{-1}\!\left(1-\tfrac{0.05}{2}\right) \right)
+   && \text{\small \textbf{Step 1:} plug in} \\[0.25em]
+&= \Phi\!\left( \frac{3 \times 20}{20} \;-\; 1.96 \right)
+   && \text{\small \textbf{Step 2:} $\sqrt{400} = 20$; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi(3.00 - 1.96) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{1.04})}
+   && \text{\small \textbf{Step 3:} simplify} \\[0.25em]
+&= \mathbf{0.85}
+   && \text{\small \textbf{Step 4:} row $1.0$, column $.04 \to .8508$}
+\end{align*}
+
+\vspace{0.2em}
+\end{frame}
+
+\begin{frame}{Check Your Work: The EGAP Power Calculator}
+\phantomsection\label{check-your-work-the-egap-power-calculator}
+\vspace{0.3em}
+
+\begin{center}
+\small \url{https://egap.shinyapps.io/power-app/}
+\end{center}
+
+\vspace{0.6em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{6.4cm}c}
+\toprule
+\textbf{Our symbol} & \textbf{Field in the app} & \textbf{Enter} \\
+\midrule
+$\mu_t - \mu_c$ & Treatment Effect Size                  & 3    \\
+$\sigma$        & Standard Deviation of Outcome Variable & 10   \\
+$\alpha$        & Significance Level                     & 0.05 \\
+                & Power Target                           & 0.8  \\
+                & Maximum Number of Subjects             & 800  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small Leave \textit{Clustered Design} and \textit{Binary Dependent Variable} unchecked.
+\end{center}
+\end{frame}
+
+\begin{frame}{Reading the Power Curve}
+\phantomsection\label{reading-the-power-curve}
+\begin{columns}[c]
+
+\begin{column}{0.53\textwidth}
+\includegraphics[width=\linewidth]{images/egap-power-app.png}
+\end{column}
+
+\begin{column}{0.45\textwidth}
+\footnotesize
+\setlength{\itemsep}{0.35em}
+\begin{itemize}
+\item The $x$-axis is \textbf{total sample size}; the $y$-axis is \textbf{power}.
+\item The blue curve traces power as $N$ grows, holding the effect at 3 and $\sigma$ at 10.
+\item The red dashed line marks the \textbf{80\% target}. Where the curve crosses it is the $N$ you need (here \textbf{349}).
+\item Our $N = 400$ sits to the \textit{right} of that crossing. Reading up from 400 gives $\approx \mathbf{0.85}$.
+\item The curve \textbf{flattens}: past $\sim$600 suggests diminishing returns at larger N.
+\end{itemize}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+\begin{frame}{Where to Situate Power Analysis in Your Research}
+\phantomsection\label{where-to-situate-power-analysis-in-your-research}
+\begin{itemize}
+\tightlist
+\item
+  Power analysis is tricky because we need information about our data to
+  derive power (e.g., \(\sigma\), \(\mu_t - \mu_c\)).
+\item
+  The problem is power calculations are most useful \emph{before} we've
+  collected our data!
+\item
+  In order to do power analysis we need to do some educated guessing:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    How big an effect should I anticipate?
+  \item
+    How many people can I realistically afford to treat?
+  \item
+    How many subjects will answer my survey?
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What If We Don't Know the Effect?}
+\phantomsection\label{what-if-we-dont-know-the-effect}
+\vspace{0.2em}
+
+\small Back to the survey experiment. The pilot fixed everything
+\textit{except} for the anticipated effect size.
+
+\vspace{0.5em}
+
+\begin{columns}[T]
+
+\begin{column}{0.40\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Fixed by the pilot}} \\
+\midrule
+$\mu_c$        & 50   \\
+$\sigma$       & 20   \\
+$\alpha$       & 0.05 \\
+target power & 0.80 \\
+\midrule
+$\mu_t - \mu_c$ & \textcolor{statorange}{\textbf{?}} \\
+$N$             & \textcolor{statorange}{\textbf{?}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.58\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.6cm}c}
+\toprule
+\textbf{Where an effect could come from} & $\mu_t - \mu_c$ \\
+\midrule
+Our own pilot                          & 7 \\
+A published study of a similar message & 5 \\
+That published effect, discounted for publication bias & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+\end{frame}
+
+\begin{frame}[fragile]{The Formula, in Code}
+\phantomsection\label{the-formula-in-code}
+\vspace{0.6em}
+
+\begin{center}
+$\displaystyle \text{power} \;=\; \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)$
+\end{center}
+
+\vspace{0.9em}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{power\_calc }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(mu\_t, mu\_c, sigma, N, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{) \{}
+\NormalTok{    z }\OtherTok{\textless{}{-}} \FunctionTok{abs}\NormalTok{(mu\_t }\SpecialCharTok{{-}}\NormalTok{ mu\_c) }\SpecialCharTok{*} \FunctionTok{sqrt}\NormalTok{(N) }\SpecialCharTok{/}\NormalTok{ (}\DecValTok{2} \SpecialCharTok{*}\NormalTok{ sigma)}
+\NormalTok{    cv }\OtherTok{\textless{}{-}} \FunctionTok{qnorm}\NormalTok{(}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2}\NormalTok{)}
+    \FunctionTok{pnorm}\NormalTok{(z }\SpecialCharTok{{-}}\NormalTok{ cv) }\SpecialCharTok{+} \FunctionTok{pnorm}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{z }\SpecialCharTok{{-}}\NormalTok{ cv) }\CommentTok{\# both rejection tails}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\vspace{0.9em}
+
+\begin{center}
+\large $\Phi \;=\;$ \texttt{pnorm} \qquad\qquad $\Phi^{-1} \;=\;$ \texttt{qnorm}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Power Across a Range of \(N\)}
+\phantomsection\label{power-across-a-range-of-n}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{grid }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}\AttributeTok{N =} \FunctionTok{seq}\NormalTok{(}\DecValTok{60}\NormalTok{, }\DecValTok{1600}\NormalTok{, }\AttributeTok{by =} \DecValTok{10}\NormalTok{), }\AttributeTok{delta =} \FunctionTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{, }\DecValTok{5}\NormalTok{, }\DecValTok{7}\NormalTok{))}
+
+\NormalTok{grid}\SpecialCharTok{$}\NormalTok{power }\OtherTok{\textless{}{-}} \FunctionTok{power\_calc}\NormalTok{(}
+    \AttributeTok{mu\_t =} \DecValTok{50} \SpecialCharTok{+}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{delta,}
+    \AttributeTok{mu\_c =} \DecValTok{50}\NormalTok{,}
+    \AttributeTok{sigma =} \DecValTok{20}\NormalTok{,}
+    \AttributeTok{N =}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{N}
+\NormalTok{)}
+
+\FunctionTok{head}\NormalTok{(grid, }\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+   N delta      power
+1 60     3 0.08947303
+2 70     3 0.09618740
+3 80     3 0.10293349
+\end{verbatim}
+
+\vspace{0.4em}
+
+\begin{center}
+\small One formula, three assumptions, 465 rows. Now plot \texttt{power} against \texttt{N}.
+\end{center}
+\end{frame}
+
+\begin{frame}{How Many Respondents Do We Need?}
+\phantomsection\label{how-many-respondents-do-we-need}
+\begin{center}
+\includegraphics{statistical-power-combined_files/figure-beamer/sweep-plot-1.png}
+\end{center}
+
+\vspace{0.1em}
+\end{frame}
+
+\begin{frame}{Your Turn: Build the Sweep in R}
+\phantomsection\label{your-turn-build-the-sweep-in-r}
+\small Your department is considering a six-week \textbf{peer-mentoring
+program} for first-year students, and can randomize students into it or
+onto a waitlist. The outcome is end-of-year GPA. The registrar tells you
+first-year GPA averages \textbf{3.05}, with a standard deviation of
+\textbf{0.45}.
+
+\vspace{0.5em}
+
+\begin{columns}[T]
+\begin{column}{0.44\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Given}} \\
+\midrule
+$\mu_c$  & 3.05 \\
+$\sigma$ & 0.45 \\
+$\alpha$ & 0.05 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.54\textwidth}
+\vspace{0.4em}
+\footnotesize
+\textbf{You decide:}
+
+\vspace{0.3em}
+
+\hspace{0.4em}\textbullet~Which GPA gains are plausible?
+
+\vspace{0.2em}
+
+\hspace{0.4em}\textbullet~How many students could you enroll?
+\end{column}
+\end{columns}
+
+\vspace{0.4em}
+\end{frame}
+
+\begin{frame}[fragile]{Your Turn: One Solution}
+\phantomsection\label{your-turn-one-solution}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{grid }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}\AttributeTok{N =} \FunctionTok{seq}\NormalTok{(}\DecValTok{50}\NormalTok{, }\DecValTok{1000}\NormalTok{, }\AttributeTok{by =} \DecValTok{10}\NormalTok{), }\AttributeTok{delta =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.10}\NormalTok{, }\FloatTok{0.15}\NormalTok{, }\FloatTok{0.20}\NormalTok{))}
+\NormalTok{grid}\SpecialCharTok{$}\NormalTok{power }\OtherTok{\textless{}{-}} \FunctionTok{power\_calc}\NormalTok{(}
+    \AttributeTok{mu\_t =} \FloatTok{3.05} \SpecialCharTok{+}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{delta,}
+    \AttributeTok{mu\_c =} \FloatTok{3.05}\NormalTok{,}
+    \AttributeTok{sigma =} \FloatTok{0.45}\NormalTok{,}
+    \AttributeTok{N =}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{N}
+\NormalTok{)}
+
+\ControlFlowTok{for}\NormalTok{ (d }\ControlFlowTok{in} \FunctionTok{unique}\NormalTok{(grid}\SpecialCharTok{$}\NormalTok{delta)) \{}
+\NormalTok{    ok }\OtherTok{\textless{}{-}}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{N[grid}\SpecialCharTok{$}\NormalTok{delta }\SpecialCharTok{==}\NormalTok{ d }\SpecialCharTok{\&}\NormalTok{ grid}\SpecialCharTok{$}\NormalTok{power }\SpecialCharTok{\textgreater{}=} \FloatTok{0.80}\NormalTok{]}
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"effect"}\NormalTok{, d, }\StringTok{"GPA points {-}\textgreater{} N ="}\NormalTok{, }\FunctionTok{min}\NormalTok{(ok), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+effect 0.1 GPA points -> N = 640 
+effect 0.15 GPA points -> N = 290 
+effect 0.2 GPA points -> N = 160 
+\end{verbatim}
+
+\footnotesize Your effects and \(N\) range will differ. The
+\emph{structure} is the answer: one grid, one call, one threshold.
+\end{frame}
+
+\begin{frame}{But what about literally any other case?}
+\phantomsection\label{but-what-about-literally-any-other-case}
+There are lots of reasons why, even for simple problems, we don't want
+to rely on such an approximation. For instance, what if you
+
+\begin{enumerate}
+\tightlist
+\item
+  don't assume a two-tailed test?
+\item
+  have clustering and want some sort of random effect?
+\item
+  are taking a Bayesian approach?
+\item
+  are using nonparametric statistics?
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{What should we do in those other cases?}
+\phantomsection\label{what-should-we-do-in-those-other-cases}
+\begin{itemize}
+\tightlist
+\item
+  Even when power is not as clearly defined, there are still a whole
+  range of things we still want to know about ``power''
+\item
+  Let's start relaxing our definition of power. We can, for now,
+  consider it as:
+\end{itemize}
+
+\vskip50pt
+
+\begin{center}
+\textbf{The probability that we we \textcolor{red}{recover} a real effect, should one \textcolor{red}{exist}}
+\end{center}
+\end{frame}
+
+\begin{frame}{What should we do in those other cases?}
+\phantomsection\label{what-should-we-do-in-those-other-cases-1}
+What would it mean then, to approach asking questions about power or
+sample size in a more general sense where we may want to consider:
+
+\vskip20pt
+
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\tightlist
+\item
+  Non-parametric approaches
+\item
+  Bayesian approaches
+\item
+  Or even just moderately more complicated study designs?
+\end{itemize}
+
+\vskip20pt
+
+\begin{center}
+\textbf{Well, we go gambling}
+\end{center}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{./images/casino.png}
+
+}
+
+\caption{\label{fig-casino}Oxford Casino Hotel}
+
+\end{figure}%
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{An aside into the casinos at Monaco}
+\phantomsection\label{an-aside-into-the-casinos-at-monaco}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\tightlist
+\item
+  Monte Carlo refers to a broad class of methods wherein you use
+  repeated random sampling to obtain some form of numerical result
+\item
+  It will be very useful for us when we cannot rely on a closed form
+  solution (which, as a reminder, is in most cases!)
+\item
+  Essentially, we can use \textcolor{red}{randomness} to solve
+  \textcolor{red}{deterministic} problems
+\end{itemize}
+
+\vskip20pt
+
+\textit{For any problem with probabilistic interpretation, it can be solved with Monte Carlo}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{./images/ulam.png}
+
+}
+
+\caption{\label{fig-casino}Primary developer of the MC method, Stanisław
+Ulam, who was inspired by his uncle's gambling}
+
+\end{figure}%
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{An aside into the casinos at Monaco}
+\phantomsection\label{an-aside-into-the-casinos-at-monaco-1}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+Let's imagine we want to know the answer to a gambling-related problem
+with a closed-form answer:
+
+\begin{center}
+What's the probability you win on red at the roulette table three spins in a row?
+\end{center}
+
+\begin{itemize}
+\tightlist
+\item
+  There are 18 \textcolor{red}{red} pockets out of 38, so the exact
+  answer is
+\end{itemize}
+
+\[
+P(\text{3 reds in a row}) = (18/38)^3 \approx 0.106
+\]
+\end{column}
+
+\begin{column}{0.4\textwidth}
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{./images/roulette.png}
+
+}
+
+\caption{\label{fig-casino}A reasonably standard roulette table}
+
+\end{figure}%
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{An aside to the casinos at Monaco}
+\phantomsection\label{an-aside-to-the-casinos-at-monaco}
+But we could also just\ldots{} go to the casino 100,000 times:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\NormalTok{spins }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{runif}\NormalTok{(}\DecValTok{3} \SpecialCharTok{*} \DecValTok{100000}\NormalTok{) }\SpecialCharTok{\textless{}} \DecValTok{18} \SpecialCharTok{/} \DecValTok{38}\NormalTok{, }\AttributeTok{ncol =} \DecValTok{3}\NormalTok{) }\CommentTok{\# each row is 3 spins}
+\FunctionTok{mean}\NormalTok{(}\FunctionTok{rowSums}\NormalTok{(spins) }\SpecialCharTok{==} \DecValTok{3}\NormalTok{) }\CommentTok{\# proportion of rows where all three won}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.1059
+\end{verbatim}
+
+\begin{center}
+If we can describe \textcolor{red}{how the data are generated}, we can estimate \textit{any} probability by running the process many times!
+\end{center}
+\end{frame}
+
+\begin{frame}{An aside into the casinos at Monaco}
+\phantomsection\label{an-aside-into-the-casinos-at-monaco-2}
+\vskip0pt plus 1filll
+
+\begin{center}
+\Large
+And whether its the more traditional, rigid form, or our more flexible modern form, power is \textit{just a probability.}
+\end{center}
+
+\vskip0pt plus 1filll
+\end{frame}
+
+\begin{frame}{So, how do we do a Monte Carlo simulation, anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways}
+In the parametric context, a Monte Carlo power analysis looks like this:
+
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Generate} random data from some distribution with the
+  properties that you expect your real data to have
+\item
+  \textbf{Analyze} this randomly generated data set with your
+  statistical analysis, whatever that is
+\item
+  \textbf{Store} the value(s) of the analysis that you're interested in
+\item
+  \textbf{Repeat} the above steps many times
+\item
+  \textbf{Compute} power by looking at the proportion of times the
+  statistic or value you're interested in was ``correct''
+\end{enumerate}
+
+\vskip20pt
+
+\begin{center}
+This can be arbitrarily complex or simple!
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{So, how do we do a Monte Carlo simulation,
+anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways-1}
+We can consider all of this to be done, for the sake of simplicity, by
+three piecemeal functions that we will want to write
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{generate()}: make a fake data set that looks like your study
+\item
+  \texttt{analyze()}: run the analysis you'd \emph{actually} run
+\item
+  \texttt{success()}: decide whether this run ``recovered'' the effect
+\end{itemize}
+
+and one function that necessarily performs the actual simulation
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{simulate\_power }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(n\_sims, generate, analyze, success) \{}
+\NormalTok{    hits }\OtherTok{\textless{}{-}} \FunctionTok{replicate}\NormalTok{(n\_sims, }\FunctionTok{success}\NormalTok{(}\FunctionTok{analyze}\NormalTok{(}\FunctionTok{generate}\NormalTok{())))}
+    \FunctionTok{mean}\NormalTok{(hits) }\CommentTok{\# proportion of successful runs = power}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}{So, how do we do a Monte Carlo simulation, anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways-2}
+We need to make a statement on how we think the data are being
+generated. For student \(i\):
+
+\[
+\text{post}_i = \underbrace{\mu_c}_{\text{baseline}} + \underbrace{\delta \, T_i}_{\text{tutoring effect}} + \underbrace{\varepsilon_i}_{\text{noise}}, \qquad \varepsilon_i \sim N(0, \sigma^2)
+\]
+
+\vskip10pt
+
+\begin{itemize}
+\tightlist
+\item
+  \(\mu_c = 72\): the average score \emph{without} tutoring
+\item
+  \(T_i\): 1 if student \(i\) was tutored, 0 if not, so tutored students
+  get an ``effect'' of \(\delta = 3\)
+\item
+  \(\varepsilon_i\): our random noise with \(\sigma = 10\)
+\end{itemize}
+
+\vskip10pt
+\end{frame}
+
+\begin{frame}[fragile]{So, how do we do a Monte Carlo simulation,
+anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways-3}
+Let's start with our function that generates data based on our student
+tutoring example from before.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gen\_basic }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{n =} \DecValTok{350}\NormalTok{, }\AttributeTok{effect =} \DecValTok{3}\NormalTok{, }\AttributeTok{sd =} \DecValTok{10}\NormalTok{) \{}
+\NormalTok{    treat }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\SpecialCharTok{:}\DecValTok{1}\NormalTok{, }\AttributeTok{each =}\NormalTok{ n }\SpecialCharTok{/} \DecValTok{2}\NormalTok{) }\CommentTok{\# half control, half tutored}
+\NormalTok{    post }\OtherTok{\textless{}{-}} \DecValTok{72} \SpecialCharTok{+}\NormalTok{ effect }\SpecialCharTok{*}\NormalTok{ treat }\SpecialCharTok{+} \FunctionTok{rnorm}\NormalTok{(n, }\AttributeTok{mean =} \DecValTok{0}\NormalTok{, }\AttributeTok{sd =}\NormalTok{ sd)}
+    \FunctionTok{data.frame}\NormalTok{(treat, post)}
+\NormalTok{\}}
+
+\FunctionTok{head}\NormalTok{(}\FunctionTok{gen\_basic}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+  treat     post
+1     0 60.03729
+2     0 86.41172
+3     0 82.52832
+4     0 66.93240
+5     0 74.34064
+6     0 72.20875
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{So, how do we do a Monte Carlo simulation, anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways-4}
+\includegraphics{statistical-power-combined_files/figure-beamer/unnamed-chunk-4-1.pdf}
+\end{frame}
+
+\begin{frame}[fragile]{So, how do we do a Monte Carlo simulation,
+anyways?}
+\phantomsection\label{so-how-do-we-do-a-monte-carlo-simulation-anyways-5}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{analyze\_lm }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(dat) \{}
+\NormalTok{  fit }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(post }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat, }\AttributeTok{data =}\NormalTok{ dat) }\CommentTok{\# same as an equal{-}variance t{-}test}
+  \FunctionTok{summary}\NormalTok{(fit)}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"treat"}\NormalTok{, ] }\CommentTok{\# estimate, SE, t, p for treat}
+\NormalTok{\}}
+
+\NormalTok{success\_sig }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(est) \{}
+\NormalTok{  est[[}\StringTok{"Pr(\textgreater{}|t|)"}\NormalTok{]] }\SpecialCharTok{\textless{}} \FloatTok{0.05} \CommentTok{\# did we reject the null?}
+\NormalTok{\}}
+
+\FunctionTok{analyze\_lm}\NormalTok{(}\FunctionTok{gen\_basic}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+  Estimate Std. Error    t value   Pr(>|t|) 
+2.48850940 1.10064783 2.26094971 0.02437943 
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Does the casino agree with our nice equation??}
+\phantomsection\label{does-the-casino-agree-with-our-nice-equation}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\FunctionTok{simulate\_power}\NormalTok{(}
+    \AttributeTok{n\_sims =} \DecValTok{2000}\NormalTok{,}
+    \AttributeTok{generate =}\NormalTok{ gen\_basic,}
+    \AttributeTok{analyze =}\NormalTok{ analyze\_lm,}
+    \AttributeTok{success =}\NormalTok{ success\_sig}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.8105
+\end{verbatim}
+
+\vskip10pt
+
+\begin{itemize}
+\tightlist
+\item
+  Pretty close for only 2000 simulations!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Does the casino agree with our nice equation??}
+\phantomsection\label{does-the-casino-agree-with-our-nice-equation-1}
+\begin{itemize}
+\tightlist
+\item
+  It's worth noting that the simulation has its own error! With \(S\)
+  simulations, the Monte Carlo standard error is
+\end{itemize}
+
+\[
+\text{SE} = \sqrt{\frac{p(1-p)}{S}}
+\]
+
+\begin{center}
+Want a more precise answer? \textbf{Go to the casino more times.}
+\end{center}
+\end{frame}
+
+\begin{frame}{What if we make this more complicated, arbitrarily so?}
+\phantomsection\label{what-if-we-make-this-more-complicated-arbitrarily-so}
+I suspect that schools know a lot about their students \emph{before} the
+program starts. Say we also have each student's \textbf{pre-test score}.
+Our model for student \(i\) becomes:
+
+\[
+\text{pre}_i \sim N(70, \sigma^2)
+\]
+
+\[
+\text{post}_i = \underbrace{\mu_c}_{\text{baseline}} + 
+\underbrace{\rho\,(\text{pre}_i - 70)}_{\text{what we knew already}} + 
+\underbrace{\delta \, T_i}_{\text{tutoring effect}} + 
+\underbrace{\varepsilon_i}_{\text{noise}}, 
+\qquad \varepsilon_i \sim N\big(0,\ \sigma^2(1-\rho^2)\big)
+\]
+
+\vskip05pt
+
+\begin{itemize}
+\tightlist
+\item
+  \(\rho = 0.6\) is the correlation between pre-test and end-of-term
+  scores
+\item
+  Students who were above average before tend to stay above average
+\item
+  The total spread of scores is still \(\sigma = 10\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{What if we make this more complicated,
+arbitrarily so?}
+\phantomsection\label{what-if-we-make-this-more-complicated-arbitrarily-so-1}
+\begin{itemize}
+\tightlist
+\item
+  We only need to change \textbf{two} of our three pieces:
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gen\_pretest }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{n =} \DecValTok{350}\NormalTok{, }\AttributeTok{effect =} \DecValTok{3}\NormalTok{, }\AttributeTok{sd =} \DecValTok{10}\NormalTok{, }\AttributeTok{rho =} \FloatTok{0.6}\NormalTok{) \{}
+\NormalTok{  treat }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\SpecialCharTok{:}\DecValTok{1}\NormalTok{, }\AttributeTok{each =}\NormalTok{ n }\SpecialCharTok{/} \DecValTok{2}\NormalTok{)}
+\NormalTok{  pre }\OtherTok{\textless{}{-}} \FunctionTok{rnorm}\NormalTok{(n, }\AttributeTok{mean =} \DecValTok{70}\NormalTok{, }\AttributeTok{sd =}\NormalTok{ sd)}
+\NormalTok{  post }\OtherTok{\textless{}{-}} \DecValTok{72} \SpecialCharTok{+}
+\NormalTok{    rho }\SpecialCharTok{*}\NormalTok{ (pre }\SpecialCharTok{{-}} \DecValTok{70}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{    effect }\SpecialCharTok{*}\NormalTok{ treat }\SpecialCharTok{+}
+    \FunctionTok{rnorm}\NormalTok{(n, }\AttributeTok{mean =} \DecValTok{0}\NormalTok{, }\AttributeTok{sd =}\NormalTok{ sd }\SpecialCharTok{*} \FunctionTok{sqrt}\NormalTok{(}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ rho}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+  \FunctionTok{data.frame}\NormalTok{(treat, pre, post)}
+\NormalTok{\}}
+
+\NormalTok{analyze\_ancova }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(dat) \{}
+  \FunctionTok{summary}\NormalTok{(}\FunctionTok{lm}\NormalTok{(post }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat }\SpecialCharTok{+}\NormalTok{ pre, }\AttributeTok{data =}\NormalTok{ dat))}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"treat"}\NormalTok{, ]}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}[fragile]{What if we make this more complicated,
+arbitrarily so?}
+\phantomsection\label{what-if-we-make-this-more-complicated-arbitrarily-so-2}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_pretest, analyze\_lm, success\_sig)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.807
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_pretest, analyze\_ancova, success\_sig)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.9415
+\end{verbatim}
+
+\vskip10pt
+
+\begin{itemize}
+\tightlist
+\item
+  We can see that our power jumps from about 80\% to about \textbf{94\%}
+\item
+  Power is a property of the
+  \textcolor{red}{design \textit{and} the analysis}, not just of \(N\)
+\item
+  If we were really strapped for students to enroll, this could be
+  really helpful to know!
+\end{itemize}
+
+\small
+
+(To be fair: this case still has a closed form (\(\sigma\) just becomes
+\(\sigma\sqrt{1-\rho^2}\)) but we didn't need to know that!)
+\end{frame}
+
+\begin{frame}{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated}
+Consider the classic problem of dropout. Let's make the following
+assumptions about our study (maybe we base this on some sort of past
+experience running such a study):
+
+\begin{itemize}
+\tightlist
+\item
+  Students who are doing \emph{badly} are more likely to stop showing up
+\item
+  The \textbf{control group loses more students} (here, about 23\%
+  vs.~11\%)
+\end{itemize}
+
+\vskip20pt
+
+\begin{center}
+You may ask: \textit{Is there a formula for the power of this study?} \\
+\vskip5pt
+\textbf{Not really.} Dropout depends on an \textit{unrealized outcome}, so the \textcolor{red}{sample size}, the \textcolor{red}{effect we estimate}, \textit{and} the \textcolor{red}{noise} all change at once!! What a pain!!
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated-1}
+But we don't need a formula! We can use our computers!! We just need to
+describe how the data are generated:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gen\_dropout }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{n =} \DecValTok{350}\NormalTok{, }\AttributeTok{effect =} \DecValTok{3}\NormalTok{, }\AttributeTok{sd =} \DecValTok{10}\NormalTok{, }\AttributeTok{rho =} \FloatTok{0.6}\NormalTok{) \{}
+\NormalTok{    dat }\OtherTok{\textless{}{-}} \FunctionTok{gen\_pretest}\NormalTok{(n, effect, sd, rho)}
+\NormalTok{    p\_drop }\OtherTok{\textless{}{-}} \FunctionTok{plogis}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{2.2} \SpecialCharTok{+} \FloatTok{0.7} \SpecialCharTok{*}\NormalTok{ (dat}\SpecialCharTok{$}\NormalTok{treat }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{{-}} \FloatTok{0.12} \SpecialCharTok{*}\NormalTok{ (dat}\SpecialCharTok{$}\NormalTok{post }\SpecialCharTok{{-}} \DecValTok{72}\NormalTok{))}
+\NormalTok{    dat[}\FunctionTok{runif}\NormalTok{(n) }\SpecialCharTok{\textgreater{}}\NormalTok{ p\_drop, ] }\CommentTok{\# we only observe the students who stayed}
+\NormalTok{\}}
+
+\FunctionTok{nrow}\NormalTok{(}\FunctionTok{gen\_dropout}\NormalTok{()) }\CommentTok{\# out of the 350 we enrolled}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 289
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated-2}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_pretest, analyze\_ancova, success\_sig)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.9425
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_dropout, analyze\_ancova, success\_sig)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.6815
+\end{verbatim}
+
+\vskip10pt
+
+\begin{itemize}
+\tightlist
+\item
+  Remember, dropout doesn't just shrink our sample!
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated-3}
+Because we simulated the data, we \emph{know} the true effect is 3. So
+we can check:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\NormalTok{estimates }\OtherTok{\textless{}{-}} \FunctionTok{replicate}\NormalTok{(}\DecValTok{2000}\NormalTok{, }\FunctionTok{analyze\_ancova}\NormalTok{(}\FunctionTok{gen\_dropout}\NormalTok{())[[}\StringTok{"Estimate"}\NormalTok{]])}
+\FunctionTok{mean}\NormalTok{(estimates)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 2.229586
+\end{verbatim}
+
+\vskip10pt
+
+\begin{itemize}
+\tightlist
+\item
+  Since students doing poorly \emph{leave}, this biases our results for
+  the control group up
+\item
+  We appear to \textbf{underestimate} the effect
+\end{itemize}
+
+\begin{center}
+Unfortuantely, there's no formula for this!!
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated-4}
+Remember our relaxed definition:
+\textbf{the probability that we \textcolor{red}{recover} a real effect, should one \textcolor{red}{exist}}.
+
+\begin{itemize}
+\tightlist
+\item
+  ``Recover'' doesn't have to mean a p-value.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{success\_close }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(est) }\FunctionTok{abs}\NormalTok{(est[[}\StringTok{"Estimate"}\NormalTok{]] }\SpecialCharTok{{-}} \DecValTok{3}\NormalTok{) }\SpecialCharTok{\textless{}} \FloatTok{1.5}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_pretest, analyze\_ancova, success\_close) }\CommentTok{\# no dropout}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.9185
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{simulate\_power}\NormalTok{(}\DecValTok{2000}\NormalTok{, gen\_dropout, analyze\_ancova, success\_close) }\CommentTok{\# dropout}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 0.786
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Let's make it even \textbf{more} complicated!}
+\phantomsection\label{lets-make-it-even-more-complicated-5}
+\large
+
+There are other options for recovery! You could ask when:
+
+\begin{itemize}
+\tightlist
+\item
+  the CI excludes zero
+\item
+  the CI is narrower than some width
+\item
+  the sign is right
+\item
+  a posterior probability exceeds 0.9 or 0.95
+\item
+  and much more!
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{So, how many students do we need?!}
+\phantomsection\label{so-how-many-students-do-we-need}
+Just like before, we want to find the \(N\) that gets us to 80\%. Now,
+instead of inverting a formula, we try a grid of sample sizes:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2026}\NormalTok{)}
+\NormalTok{ns }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\DecValTok{150}\NormalTok{, }\DecValTok{500}\NormalTok{, }\AttributeTok{by =} \DecValTok{50}\NormalTok{)}
+\NormalTok{powers }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(ns, \textbackslash{}(n) \{}
+  \FunctionTok{simulate\_power}\NormalTok{(}
+    \DecValTok{1000}\NormalTok{,}
+    \AttributeTok{generate =}\NormalTok{ \textbackslash{}() }\FunctionTok{gen\_dropout}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n),}
+    \AttributeTok{analyze =}\NormalTok{ analyze\_ancova,}
+    \AttributeTok{success =}\NormalTok{ success\_sig}
+\NormalTok{  )}
+\NormalTok{\})}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}{So, how many students do we need?}
+\phantomsection\label{so-how-many-students-do-we-need-1}
+\includegraphics{statistical-power-combined_files/figure-beamer/unnamed-chunk-14-1.pdf}
+
+\begin{center}
+\small With dropout, we need to enrol \textbf{around 450 students}. Alas, more students only buys \textit{power} because the estimate is \textcolor{red}{still biased}.
+\end{center}
+\end{frame}
+
+\begin{frame}{Your turn!}
+\phantomsection\label{your-turn}
+We provided you with a template file to use for htis part,
+\texttt{power-sim-template.R}. Use this and fill in every
+\texttt{\_\_\_}. Use your own study, or, if nothing comes to mind, the
+tutoring study from earlier is good practice too!
+
+Ask yourself:
+
+\begin{enumerate}
+\tightlist
+\item
+  What are my baseline, effect, and noise values, and where did I get
+  those numbers?
+\item
+  \texttt{generate()} -- Does this dataset look like something my study
+  could produce?
+\item
+  \texttt{analyze()} -- What would I \textit{actually} run on the real
+  data?
+\item
+  \texttt{success()} -- What counts as ``recovering'' the effect?
+\item
+  Estimate power -- With \textit{no} effect, do I get about 5\%? A
+  significance-based \texttt{success()} should succeed about 5\% of the
+  time
+\item
+  Perform a sweep over \(N\) -- Where does my curve cross 80\%?
+\item
+  Now, \textcolor{statsecondary}{\textbf{add a complication}} -- Maybe
+  unequal groups, a covariate, a skewed outcome, with these how much
+  power do I lose?
+\end{enumerate}
+\end{frame}
+
+
+
+\end{document}
