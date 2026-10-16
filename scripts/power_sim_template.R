@@ -4,9 +4,13 @@
 #' step before moving on. Every step ends with a little check, so you'll know
 #' right away if there's a mistake hiding
 #'
-#' No study of your own in mind? Use the tutoring study from the
-#' workshop with some new components. Maybe try asking about GPAs and
-#' choose some values you think you'd like.
+#' No study of your own in mind? Use the blood-pressure coaching study from
+#' the slides:
+#'   - systolic blood pressure under usual care: mean 140 mmHg, SD 15
+#'   - expected effect of coaching: -5 mmHg
+#'   - the clinic can enroll 250 patients
+#' For Step 7, either adjust for baseline blood pressure (correlation 0.5 with
+#' the six-month reading) or coach only one in three patients.
 
 set.seed(2026)
 
