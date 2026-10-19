@@ -282,7 +282,9 @@ This particular formula holds when:
 
 \vspace{0.4em}
 
-\scriptsize Source: Coppock, \textit{10 Things to Know About Statistical Power} (EGAP). EGAP writes power as $\beta$; we use $\beta$ for the Type II error rate, so power $= 1-\beta$.
+\scriptsize EGAP writes power as $\beta$; we use $\beta$ for the Type II error rate, so power $= 1-\beta$.
+
+Source: Coppock, \textit{10 Things to Know About Statistical Power} (EGAP), originally found in Gerber & Green (2012), \textit{Field Experiments: Deisgn, Analysis, and Interpretation}. 
 
 
 ## A Running Example: Does the Message Move Opinion?
