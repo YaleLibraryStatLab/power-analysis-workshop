@@ -447,7 +447,7 @@ $N$ & \textbf{Minimum detectable effect} & \textbf{In standard deviations} \\
 \vspace{0.5em}
 
 \begin{notebox}
-\small A colleague is evaluating a new tutoring program. \textbf{400 students} will be randomly assigned, 200 to tutoring and 200 to business as usual, with final exam score as the outcome. Past cohorts averaged \textbf{72} points with a standard deviation of \textbf{10}, and the program is expected to add \textbf{3} points.
+\small A colleague is evaluating a new tutoring program. \textbf{400 students} will be randomly assigned, 200 to tutoring and 200 to business as usual, with final exam score as the outcome. Students in previous years average a final exam score of \textbf{72} points with a standard deviation of \textbf{10}, and the program is expected to add \textbf{3} points.
 \end{notebox}
 
 \vspace{0.7em}
