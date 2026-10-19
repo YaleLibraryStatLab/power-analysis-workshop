@@ -534,7 +534,7 @@ Work it in three steps:
 \vspace{0.3em}
 
 \begin{center}
-\small \url{https://egap.shinyapps.io/power-app/}
+\small \textcolor{blue}{\url{https://egap.shinyapps.io/power-app/}}
 \end{center}
 
 \vspace{0.6em}
@@ -926,26 +926,55 @@ A significance test              & Bayesian or estimation-based goals \\
 - So far, "recovers" has meant $p < 0.05$.
 - In a simulation, it can mean any criterion you can check in code: the estimate is within a set distance of the truth, the confidence interval excludes zero, a posterior probability exceeds 0.95.
 - With this definition, power can be estimated for any design whose data you can simulate.
+## What should we do in those other cases?
 
+What would it mean then, to approach asking questions about power or sample size in a more general sense where we may want to consider:
 
-## Monte Carlo Simulation
-
+\vskip20pt 
 ::: {.columns}
 
-::: {.column width="62%"}
+::: {.column width="60%"}
 
-\small
+* Non-parametric approaches
+* Bayesian approaches
+* Or even just moderately more complicated study designs? 
 
-- Monte Carlo methods estimate a quantity by repeated random sampling.
-- They are useful when there is no closed-form answer, which is the case for most study designs.
-- The quantity being estimated is fixed; the random sampling is only the method for computing it.
-- Any quantity that can be written as a probability can be estimated this way.
+\vskip20pt 
+
+\begin{center}
+\textbf{Well, we go gambling}
+\end{center}
 
 :::
 
-::: {.column width="38%"}
+::: {.column width="40%"}
 
-![Stanisław Ulam developed the method in the 1940s. It is named after the casino in Monaco, where his uncle gambled.](./images/ulam.png){#fig-ulam fig-alt="Photo of Stanisław Ulam" height=50%}
+![Oxford Casino Hotel](./images/casino.png){#fig-casino fig-alt="alt" height=50%}
+
+
+:::
+
+:::
+
+## An aside into the casinos at Monaco
+
+::: {.columns}
+
+::: {.column width="60%"}
+
+* Monte Carlo refers to a broad class of methods wherein you use repeated random sampling to obtain some form of numerical result 
+* It will be very useful for us when we cannot rely on a closed form solution (which, as a reminder, is in most cases!)
+* Essentially, we can use \textcolor{red}{randomness} to solve \textcolor{red}{deterministic} problems
+
+\vskip20pt 
+
+\textit{For any problem with probabilistic interpretation, it can be solved with Monte Carlo}
+
+:::
+
+::: {.column width="40%"}
+
+![Primary developer of the MC method, Stanisław Ulam, who was inspired by his uncle's gambling](./images/ulam.png){#fig-casino fig-alt="alt" height=50%}
 
 :::
 
@@ -960,8 +989,7 @@ A significance test              & Bayesian or estimation-based goals \\
 
 \small
 
-Start with a gambling problem that has an exact answer:
-
+Let's imagine we want to know the answer to a gambling-related problem with a closed-form answer:
 \vspace{0.5em}
 
 \begin{center}
@@ -992,7 +1020,10 @@ $$
 
 ## Monte Carlo Simulation: Simulating the Spins
 
-Simulate 100,000 sets of three spins and count how often all three are red:
+But we could also just... go to the casino 100,000 times:
+
+
+Let's simulate 100,000 sets of three spins and count how often all three are red:
 
 ```{r roulette, echo=TRUE}
 set.seed(2026)
@@ -1006,6 +1037,21 @@ mean(rowSums(spins) == 3) # proportion of rows where all three are red
 \small If you can write down how the data are generated, you can estimate a probability by running that process many times and counting. Power is a probability, so it can be estimated the same way.
 \end{center}
 
+## So, how do we do a Monte Carlo simulation, anyways?
+
+In the parametric context, a Monte Carlo power analysis looks like this:
+
+1. **Generate** random data from some distribution with the properties that you expect your real data to have
+2. **Analyze** this randomly generated data set with your statistical analysis, whatever that is
+3. **Store** the value(s) of the analysis that you're interested in
+4. **Repeat** the above steps many times
+5. **Compute** power by looking at the proportion of times the statistic or value you're interested in was "correct"
+
+\vskip20pt
+
+\begin{center}
+This can be arbitrarily complex or simple!
+\end{center}
 
 ## The Simulation Recipe
 
@@ -1027,7 +1073,7 @@ simulate_power <- function(n_sims, generate, analyze, success) {
 
 ## Generating Data for the Tutoring Study
 
-For student $i$:
+We need to make a statement on how we think the data are being generated. For student $i$:
 
 $$
 \text{post}_i = \underbrace{\mu_c}_{\text{control mean}} + \underbrace{\delta \, T_i}_{\text{tutoring effect}} + \underbrace{\varepsilon_i}_{\text{noise}}, \qquad \varepsilon_i \sim N(0, \sigma^2)
@@ -1074,6 +1120,7 @@ simulate_power(n_sims = 2000, generate = gen_basic,
                analyze = analyze_lm, success = success_sig)
 ```
 
+- Pretty close for only 2000 simulations! 
 \vspace{0.4em}
 
 \small The formula gives `r round(power_calc(75, 72, 10, 350), 2)`. The simulated estimate has its own error. With $S$ simulations, the Monte Carlo standard error is
@@ -1085,7 +1132,7 @@ $$
 which is about 0.009 for $p = 0.80$ and $S = 2{,}000$. For a more precise estimate, increase $S$.
 
 
-## Adding a Pre-Test
+## Adding some complication -- a pre-test
 
 \small Schools often have each student's \textbf{pre-test score}. The model for student $i$ becomes:
 
@@ -1146,7 +1193,10 @@ simulate_power(2000, gen_pretest, analyze_ancova, success_sig) # pre-test
 
 - Same students, same $N$: power rises from about 0.80 to about 0.94.
 - Power depends on the \textbf{analysis} as well as on $N$. Adjusting for a pre-treatment covariate costs no additional students.
-- This case still has a closed form ($\sigma$ becomes $\sigma\sqrt{1-\rho^2} = 8$), but the simulation did not require knowing it.
+- If we were really strapped for students to enroll, this could be really helpful to know!
+
+\small
+(To be fair: this case still has a closed form ($\sigma$ just becomes $\sigma\sqrt{1-\rho^2}$) but we didn't need to know that!)
 
 
 ## Your Turn (Groups): The Tutoring Study with Dropout
@@ -1234,7 +1284,7 @@ ggplot(data.frame(N = ns, power = powers), aes(N, power)) +
   theme(panel.grid.minor = element_blank())
 ```
 
-\footnotesize Power reaches 80\% at about 450 students, but the estimate is biased at every $N$. More students raise the rejection rate; they do not make the estimate more accurate.
+\footnotesize Power reaches 80\% at about 450 students, but more students do not make the estimate more accurate.
 
 
 ## What Invalidates a Standard Calculation
