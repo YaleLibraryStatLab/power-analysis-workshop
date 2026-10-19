@@ -314,7 +314,7 @@ $\alpha$ & 0.05 & Two-sided, by convention. \\
 
 \vspace{0.2em}
 
-\small Assumed effect: $\mu_t - \mu_c = 7$ points, or $0.35\sigma$. \textbf{What is the power to detect a 7-point effect with 164 respondents?}
+\small Assumed effect: $\mu_t - \mu_c = 7$ points, or $0.35 \times \sigma$. \textbf{What is the power to detect a 7-point effect with 164 respondents?}
 
 
 ## Step 1: Do the Arithmetic
