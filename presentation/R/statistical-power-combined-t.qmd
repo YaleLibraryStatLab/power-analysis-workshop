@@ -274,7 +274,7 @@ $\Phi$ is the standard normal CDF: $\Phi(x)$ is the probability that a standard 
 
 \vspace{0.6em}
 
-The formula holds when:
+This particular formula holds when:
 
 - subjects are randomly assigned to two arms of $N/2$ each,
 - the outcome is normally distributed with the same $\sigma$ in both arms,
