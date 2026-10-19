@@ -1,0 +1,1316 @@
+---
+title: "Statistical Power"
+subtitle: ""
+author:
+  - name: Ted Ellsworth, PhD
+  - name: Cole Brookson, MSc
+date: today
+format:
+  beamer:
+    theme: default
+    aspectratio: 169
+    slide-level: 2
+    pdf-engine: xelatex
+    include-in-header: ../../assets/beamer-header.tex
+    keep-tex: true
+---
+
+
+## Free statistical consulting for Yale researchers
+
+\vspace{2.8em}
+
+\begin{center}
+
+\large
+Study design $\cdot$ analysis $\cdot$ visualization $\cdot$ writing.
+
+\vspace{1.4em}
+
+\normalsize
+Walk-ins, appointments, and workshops --- free for all Yale affiliates.
+
+\vspace{2.8em}
+
+\textcolor{statsecondary}{%
+  \large\textbf{library.yale.edu/statlab}%
+}
+
+\end{center}
+
+
+## Introduction
+
+\vspace{1.4em}
+
+\begin{center}
+\large A committee, a reviewer, an IRB, or a funder asks: \textbf{how many subjects do you need?}
+\end{center}
+
+![All problems are solved with more power.](./images/power-meme.png){#fig-meme fig-alt="alt" height=50%}
+
+## Schedule
+
+\vspace{0.3em}
+Leaving this blank until we finalize
+
+
+## Learning Objectives
+
+\vspace{0.3em}
+
+\small By the end of the session you should be able to:
+
+\vspace{0.4em}
+
+\begin{center}
+\begin{enumerate}
+  \item Describe the formal definition of statistical power, and relate it to other quantities of interest 
+  \item Compute power by hand and with a simple online calculator
+  \item Understand how to perform a "sweep" over a grid to identify a sample size 
+  \item Generalize the formal definition of statistical power to an agnostic view of the "False negative" problem
+  \item Calculate power from a closed form in the classic hypothesis testing framing 
+  \item Understand and design an agnostic power calculation to quantify effect size recovery in an arbitrary model
+\end{enumerate}
+\end{center}
+
+## False Negatives and False Positives (Type I and Type II Errors)
+
+
+::: {.columns}
+
+::: {.column width="60%"}
+
+- Most diagnostic statistics seek to identify two types of errors:
+
+  - *False Positive* ($\alpha$, Type I) refer to the probability that you will claim an effect is *present* when the **null hypothesis is true**.
+  - *False Negatives* ($\beta$, Type II) refer to the probability that you will claim an effect is *absent* when the **null hypothesis is false**.
+
+- Power is what is left over from a false negative error: $\text{power} = 1 - \beta$.
+
+:::
+
+::: {.column width="40%"}
+
+![Dr. Jacob Cohen (1923-1998)](./images/cohen.png){#fig-cohen fig-alt="alt" height=50%}
+
+
+:::
+
+:::
+
+\begin{center}
+Power is \textbf{the probability of rejecting the null hypothesis when it is in fact false and should be rejected.}
+\end{center}
+
+
+## Type S and Type M Errors
+
+- Underpowered studies do more than miss real effects: when they *do* find a significant effect, that estimate is likely to be wrong.
+- A significant estimate can be wrong in two ways:
+  - *Type S (sign)*: the estimate has the opposite sign of the true effect. At $6\%$ power, $24\%$ of significant estimates do.
+  - *Type M (magnitude)*: the estimate overstates the true effect. At $6\%$ power, significant estimates are $9.5$ times too large on average.
+
+\vspace{0.4em}
+
+\scriptsize Source: Gelman and Carlin (2014), \textit{Beyond Power Calculations: Assessing Type S (Sign) and Type M (Magnitude) Errors}.
+
+## What Power Looks Like
+
+```{r power-picture, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7.6, fig.height=2.75, dev="png", dpi=300, fig.align="center"}
+library(ggplot2)
+cv <- qnorm(0.975)
+zz <- seq(-3.6, 6.2, length.out = 700)
+dd <- rbind(
+  data.frame(z = zz, y = dnorm(zz, 0), curve = "If the null is true"),
+  data.frame(
+    z = zz,
+    y = dnorm(zz, 2.24),
+    curve = "If the 7-point effect is real"
+  )
+)
+
+ggplot(dd, aes(z, y)) +
+  geom_area(
+    data = subset(dd, curve != "If the null is true" & z >= cv),
+    fill = "#4A90C2",
+    alpha = 0.55
+  ) +
+  geom_area(
+    data = subset(dd, curve == "If the null is true" & z >= cv),
+    fill = "#B41E1E",
+    alpha = 0.70
+  ) +
+  geom_line(aes(colour = curve), linewidth = 0.75) +
+  geom_vline(
+    xintercept = cv,
+    colour = "grey20",
+    linewidth = 0.4,
+    linetype = "dashed"
+  ) +
+  annotate(
+    "text",
+    x = 3.6,
+    y = 0.20,
+    label = "power = 0.61",
+    colour = "#0B2E52",
+    size = 3.1,
+    fontface = "bold"
+  ) +
+  annotate(
+    "text",
+    x = 2.45,
+    y = 0.045,
+    label = "alpha/2 == 0.025",
+    parse = TRUE,
+    colour = "#B41E1E",
+    size = 2.7,
+    hjust = 0
+  ) +
+  annotate(
+    "text",
+    x = cv,
+    y = 0.43,
+    label = "reject to the right of 1.96",
+    colour = "grey20",
+    size = 2.7,
+    hjust = -0.04
+  ) +
+  scale_colour_manual(
+    values = c(
+      "If the null is true" = "#B41E1E",
+      "If the 7-point effect is real" = "#0B2E52"
+    ),
+    name = NULL
+  ) +
+  # 1.96 and 2.24 nearly collide on the axis; drop the second label a row
+  scale_x_continuous(
+    breaks = c(0, cv, 2.24),
+    labels = c("0", "1.96", "\n2.24")
+  ) +
+  labs(x = "Effect, measured in standard errors", y = NULL) +
+  theme_minimal(base_size = 9) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(linewidth = 0.25, colour = "grey88"),
+    axis.text.y = element_blank(),
+    axis.title = element_text(colour = "grey30"),
+    legend.position = "bottom",
+    legend.margin = margin(t = -6)
+  )
+```
+
+\vspace{-0.2em}
+
+\begin{center}
+\footnotesize \textcolor{errorred}{\textbf{Red}} is the study you would run if there were no effect; the shaded sliver past 1.96 is $\alpha$ --- the false positives you agreed to tolerate. \textcolor{statsecondary}{\textbf{Blue}} is the study you expect if the effect is real; \textbf{the shaded area past the same line is power}.
+\end{center}
+
+
+## Traditional Statistical Power & Its Ingredients
+\vskip0pt plus 1filll
+
+
+So what do we need to actually calculate this? Well, the constituent components to calculate $1 - \beta$ are: 
+
+* \textbf{$\alpha$, the significance criterion}
+* \textbf{$N$, the sample size} 
+* \textbf{$\delta$, the population effect size}
+\vskip0pt plus 1filll
+
+\begin{center}
+\textit{So,} you must be thinking, \textit{what's the formula?!}
+
+\end{center}
+
+## Traditional Statistical Power & Its Ingredients 
+
+\begin{center}
+\Large
+There isn't a formula for the calculation of power. There are many!
+\end{center}
+
+## Core Notation
+
+In order to estimate statistical power, we need four properties:
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{7.9cm}}
+\toprule
+\textbf{Symbol} & \textbf{Quality} & \textbf{What it is} \\
+\midrule
+$N$              & Sample size        & How many subjects you collect in total. \\
+$\mu_t - \mu_c$  & Effect size        & The true difference between the treatment and control means: the \textit{signal}. \\
+$\sigma$         & Standard deviation & How much outcomes vary from one another: the \textit{noise}. \\
+$\alpha$         & Significance level & The Type I error rate you are willing to tolerate; it sets the evidence threshold. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+
+\begin{center}
+\small Note we will use $\mu_t - \mu_c$ throughout to denote effect size. Where space is tight --- in code, and in the appendix --- we abbreviate it $\delta$. 
+\end{center}
+
+
+## The Three Ingredients of Statistical Power
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}cc>{\raggedright\arraybackslash}p{6.2cm}}
+\toprule
+\textbf{Ingredient} & \textbf{Symbol} & \textbf{Control?} & \textbf{What it does} \\
+\midrule
+Strength of the treatment & $\mu_t - \mu_c$ & Partly & Dose, framing, and duration are yours to set; a stronger treatment is easier to detect. \\
+Background noise & $\sigma$ & Partly & Noisier outcomes bury the signal, but better measurement and covariates quiet it. \\
+Experimental design & $N$, $\alpha$ & \textbf{Yes} & Sample size, randomization scheme, and covariate adjustment. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+## Let's look at a case where we can find a closed form
+
+The formula depends entirely on what *specific* test you want to run. Here's an example. Let's make the following assumptions: 
+
+1. We have a completely randomized experiment, with two groups are selected to form a binary treatment, each group containing $N \ 2$ 
+2. Assume the outcome variable is normally distributed, and the control group has mean $\mu_c$ and the treatment group has $\mu_t$
+3. The two groups have a shared standard deviation, $\sigma$
+
+We now say we want to perform a difference of means test, in the two-tailed sense
+
+## Let's look at a case where we can find a closed form
+
+Say we have the following hypothetical situation where we want to compute power:
+
+- A school is piloting a new **tutoring program**, and wants to know if it improves end-of-term test scores (out of 100)
+- Students are randomized into two groups, with one half getting tutoring
+- Untutored students average $\mu_c = 72$
+- The school will consider the program "worth it", if tutoring gets average scores to $\mu_t = 75$
+- Scores vary with $\sigma = 10$
+
+## Let's look at a case where we can find a closed form
+
+Say we have the following hypothetical situation where we want to compute power:
+
+- A school is piloting a new **tutoring program**, and wants to know if it improves end-of-term test scores (out of 100)
+- Students are randomized into two groups, with one half getting tutoring
+- Untutored students average $\mu_c = 72$
+- The school will consider the program "worth it", if tutoring gets average scores to $\mu_t = 75$
+- Scores vary with $\sigma = 10$
+
+\begin{center}
+Luckily, in such a simple form, there's a nice asymptotic approximation for the power of the experiment
+\end{center}
+
+## Step 1: Do the Arithmetic
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)
+   && \text{\small the formula} \\[0.25em]
+&= \Phi\!\left( \frac{7\,\sqrt{164}}{2(20)} \;-\; \textcolor{statsecondary}{1.96} \right)
+   && \text{\small plug in; \;\; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.24}} \;-\; 1.96 \right) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{0.28})}
+   && \text{\small $7 \times 12.81 / 40 = 2.24$}
+\end{align*}
+
+\vspace{0.5em}
+
+\begin{center}
+\small
+$\underbrace{\mathbf{2.24}}_{\text{what you expect}}$ \qquad
+$\underbrace{\mathbf{1.96}}_{\text{what you need}}$ \qquad
+$\underbrace{\mathbf{0.28}}_{\text{all the room you have}}$
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\scriptsize A thin margin means an unreliable study. One lookup turns $\Phi(0.28)$ into a number. \\
+(Where does $1.96$ come from? Running the $z$-table \textit{backwards} --- see the appendix.)
+\end{center}
+
+
+## Step 2: Read the Answer Off the Table
+
+\begin{columns}[T]
+
+\begin{column}{0.30\textwidth}
+\vspace{0.6em}
+
+\begin{center}
+$\text{power} = \Phi(\mathbf{0.28})$
+\end{center}
+
+\vspace{0.5em}
+
+\footnotesize
+Split the $z$-score across the two margins of the table:
+
+\vspace{0.4em}
+
+\hspace{0.5em}$\mathbf{0.2}\;$ selects the \textbf{row}
+
+\vspace{0.2em}
+
+\hspace{0.5em}$\mathbf{0.08}$ selects the \textbf{column}
+
+\vspace{0.5em}
+
+The cell where they meet is the area to the \textit{left} of $z$, which is exactly the power.
+\end{column}
+
+\begin{column}{0.70\textwidth}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$z$ & .00 & .01 & .02 & .03 & .04 & .05 & .06 & .07 & \cellcolor{stataccbg}\textbf{.08} & .09 \\
+\midrule
+0.0 & .5000 & .5040 & .5080 & .5120 & .5160 & .5199 & .5239 & .5279 & \cellcolor{stataccbg}.5319 & .5359 \\
+0.1 & .5398 & .5438 & .5478 & .5517 & .5557 & .5596 & .5636 & .5675 & \cellcolor{stataccbg}.5714 & .5753 \\
+\cellcolor{stataccbg}\textbf{0.2} & \cellcolor{stataccbg}.5793 & \cellcolor{stataccbg}.5832 & \cellcolor{stataccbg}.5871 & \cellcolor{stataccbg}.5910 & \cellcolor{stataccbg}.5948 & \cellcolor{stataccbg}.5987 & \cellcolor{stataccbg}.6026 & \cellcolor{stataccbg}.6064 & \cellcolor{statorange}\textbf{\color{white}.6103} & \cellcolor{stataccbg}.6141 \\
+0.3 & .6179 & .6217 & .6255 & .6293 & .6331 & .6368 & .6406 & .6443 & \cellcolor{stataccbg}.6480 & .6517 \\
+0.4 & .6554 & .6591 & .6628 & .6664 & .6700 & .6736 & .6772 & .6808 & \cellcolor{stataccbg}.6844 & .6879 \\
+0.5 & .6915 & .6950 & .6985 & .7019 & .7054 & .7088 & .7123 & .7157 & \cellcolor{stataccbg}.7190 & .7224 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+
+\begin{center}
+\large $\text{power} \;=\; \Phi(0.28) \;=\; \textcolor{statorange}{\mathbf{0.61}}$
+\end{center}
+
+
+## The Smallest Effect This Study Can See
+
+\small We now know what this design does with a 7-point effect. The next question is what it \textit{can} do: fix power at 80\% and solve the same formula for the effect instead of for power.
+
+\vspace{0.3em}
+
+\begin{center}
+$\displaystyle \text{MDE} \;=\; \underbrace{\left(\Phi^{-1}\!\left(1-\tfrac{\alpha}{2}\right) + \Phi^{-1}(0.80)\right)}_{1.96 \;+\; 0.84 \;=\; 2.80} \;\times\; \underbrace{\frac{2\sigma}{\sqrt{N}}}_{\text{standard error}}$
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{ccc}
+\toprule
+$N$ & \textbf{Smallest detectable effect} & \textbf{In standard deviations} \\
+\midrule
+\textcolor{statorange}{\textbf{164}} & \textcolor{statorange}{\textbf{8.75 points}} & \textcolor{statorange}{\textbf{0.44$\sigma$}} \\
+257  & 6.99 & 0.35$\sigma$ \\
+400  & 5.60 & 0.28$\sigma$ \\
+800  & 3.96 & 0.20$\sigma$ \\
+1396 & 3.00 & 0.15$\sigma$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3em}
+
+\begin{center}
+\small Pilot assumes $\mu_t - \mu_c = \mathbf{7}$. \qquad This design detects $\textcolor{statorange}{\mathbf{8.75}}$ and up.
+\end{center}
+
+
+## Check: Put 8.75 Back Through the Formula
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{8.75\,\sqrt{164}}{2(20)} \;-\; 1.96 \right)
+   && \text{\small the MDE in place of the pilot's effect} \\[0.25em]
+&= \Phi\!\left( \textcolor{statsecondary}{\mathbf{2.80}} \;-\; 1.96 \right) \;=\; \Phi(\textcolor{statsecondary}{\mathbf{0.84}})
+   && \text{\small $8.75 \times 12.81 / 40 = 2.80$} \\[0.25em]
+&= \mathbf{0.80}
+   && \text{\small row $0.8$, column $.04 \to .7995$}
+\end{align*}
+
+\vspace{0.4em}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{9pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{6.6cm}c}
+\toprule
+\textbf{Pin these three} & \textbf{Get} \\
+\midrule
+$N = 164$, \; $\sigma = 20$, \; effect $= 7$      & power $= 0.61$ \\
+$N = 164$, \; $\sigma = 20$, \; power $= 0.80$    & effect $= 8.75$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+## Your Turn: Is the Tutoring Program Worth Studying?
+
+\vspace{0.5em}
+
+\begin{notebox}
+\small A colleague is evaluating a new tutoring program. \textbf{400 students} will be randomly assigned, 200 to tutoring and 200 to business as usual, with final exam score as the outcome. Past cohorts averaged \textbf{72} points with a standard deviation of \textbf{10}, and the program is expected to add \textbf{3} points.
+\end{notebox}
+
+\vspace{0.7em}
+
+\begin{center}
+\large \textbf{What is the power of this design?}
+\end{center}
+
+\vspace{0.7em}
+
+\begin{columns}[c]
+
+\begin{column}{0.46\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{cc}
+\toprule
+\textbf{Symbol} & \textbf{Value} \\
+\midrule
+$N$      & 400  \\
+$\mu_t$  & 75   \\
+$\mu_c$  & 72   \\
+$\sigma$ & 10   \\
+$\alpha$ & 0.05, two-sided \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.50\textwidth}
+\footnotesize
+The formula and the $z$-table are on your \textbf{handout}.
+
+\vspace{0.6em}
+
+Work it in three moves:
+
+\vspace{0.3em}
+
+\hspace{0.4em}1. Compute what you \textbf{expect}
+
+\vspace{0.2em}
+
+\hspace{0.4em}2. Subtract what you \textbf{need}
+
+\vspace{0.2em}
+
+\hspace{0.4em}3. Look the difference up
+\end{column}
+
+\end{columns}
+
+
+
+## Your Turn: The Solution
+
+\vspace{0.2em}
+
+\begin{align*}
+\text{power} &= \Phi\!\left( \frac{|75 - 72|\,\sqrt{400}}{2(10)} \;-\; \Phi^{-1}\!\left(1-\tfrac{0.05}{2}\right) \right)
+   && \text{\small \textbf{Step 1:} plug in} \\[0.25em]
+&= \Phi\!\left( \frac{3 \times 20}{20} \;-\; 1.96 \right)
+   && \text{\small \textbf{Step 2:} $\sqrt{400} = 20$; $\Phi^{-1}(0.975) = 1.96$} \\[0.25em]
+&= \Phi(3.00 - 1.96) \;=\; \textcolor{statsecondary}{\Phi(\mathbf{1.04})}
+   && \text{\small \textbf{Step 3:} simplify} \\[0.25em]
+&= \mathbf{0.85}
+   && \text{\small \textbf{Step 4:} row $1.0$, column $.04 \to .8508$}
+\end{align*}
+
+\vspace{0.2em}
+
+
+## Check Your Work: The EGAP Power Calculator
+
+\vspace{0.3em}
+
+\begin{center}
+\small \url{https://egap.shinyapps.io/power-app/}
+\end{center}
+
+\vspace{0.6em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{6.4cm}c}
+\toprule
+\textbf{Our symbol} & \textbf{Field in the app} & \textbf{Enter} \\
+\midrule
+$\mu_t - \mu_c$ & Treatment Effect Size                  & 3    \\
+$\sigma$        & Standard Deviation of Outcome Variable & 10   \\
+$\alpha$        & Significance Level                     & 0.05 \\
+                & Power Target                           & 0.8  \\
+                & Maximum Number of Subjects             & 800  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\small Leave \textit{Clustered Design} and \textit{Binary Dependent Variable} unchecked.
+\end{center}
+
+
+## Reading the Power Curve
+
+\begin{columns}[c]
+
+\begin{column}{0.53\textwidth}
+\includegraphics[width=\linewidth]{images/egap-power-app.png}
+\end{column}
+
+\begin{column}{0.45\textwidth}
+\footnotesize
+\setlength{\itemsep}{0.35em}
+\begin{itemize}
+\item The $x$-axis is \textbf{total sample size}; the $y$-axis is \textbf{power}.
+\item The blue curve traces power as $N$ grows, holding the effect at 3 and $\sigma$ at 10.
+\item The red dashed line marks the \textbf{80\% target}. Where the curve crosses it is the $N$ you need (here \textbf{349}).
+\item Our $N = 400$ sits to the \textit{right} of that crossing. Reading up from 400 gives $\approx \mathbf{0.85}$.
+\item The curve \textbf{flattens}: past $\sim$600 suggests diminishing returns at larger N.
+\end{itemize}
+\end{column}
+
+\end{columns}
+
+## Where to Situate Power Analysis in Your Research
+
+- Power analysis is tricky because we need information about our data to derive power (e.g., $\sigma$, $\mu_t - \mu_c$).
+- The problem is power calculations are most useful *before* we've collected our data!
+- In order to do power analysis we need to do some educated guessing: 
+  - How big an effect should I anticipate? 
+  - How many people can I realistically afford to treat?
+  - How many subjects will answer my survey?
+
+## What If We Don't Know the Effect?
+
+\vspace{0.2em}
+
+\small Back to the survey experiment. The pilot fixed everything \textit{except} for the anticipated effect size.
+
+\vspace{0.5em}
+
+\begin{columns}[T]
+
+\begin{column}{0.40\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Fixed by the pilot}} \\
+\midrule
+$\mu_c$        & 50   \\
+$\sigma$       & 20   \\
+$\alpha$       & 0.05 \\
+target power & 0.80 \\
+\midrule
+$\mu_t - \mu_c$ & \textcolor{statorange}{\textbf{?}} \\
+$N$             & \textcolor{statorange}{\textbf{?}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\begin{column}{0.58\textwidth}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.6cm}c}
+\toprule
+\textbf{Where an effect could come from} & $\mu_t - \mu_c$ \\
+\midrule
+Our own pilot                          & 7 \\
+A published study of a similar message & 5 \\
+That published effect, discounted for publication bias & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+
+\vspace{0.5em}
+
+
+## The Formula, in Code
+
+```{=latex}
+\vspace{0.6em}
+
+\begin{center}
+$\displaystyle \text{power} \;=\; \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)$
+\end{center}
+
+\vspace{0.9em}
+```
+
+```{r power-fn, echo=TRUE}
+power_calc <- function(mu_t, mu_c, sigma, N, alpha = 0.05) {
+    z <- abs(mu_t - mu_c) * sqrt(N) / (2 * sigma)
+    cv <- qnorm(1 - alpha / 2)
+    pnorm(z - cv) + pnorm(-z - cv) # both rejection tails
+}
+```
+
+```{=latex}
+\vspace{0.9em}
+
+\begin{center}
+\large $\Phi \;=\;$ \texttt{pnorm} \qquad\qquad $\Phi^{-1} \;=\;$ \texttt{qnorm}
+\end{center}
+```
+
+
+## Power Across a Range of $N$
+
+```{r sweep, echo=TRUE, message=FALSE, warning=FALSE}
+grid <- expand.grid(N = seq(60, 1600, by = 10), delta = c(3, 5, 7))
+
+grid$power <- power_calc(
+    mu_t = 50 + grid$delta,
+    mu_c = 50,
+    sigma = 20,
+    N = grid$N
+)
+
+head(grid, 3)
+```
+
+```{=latex}
+\vspace{0.4em}
+
+\begin{center}
+\small One formula, three assumptions, `r nrow(grid)` rows. Now plot \texttt{power} against \texttt{N}.
+\end{center}
+```
+
+
+## How Many Respondents Do We Need?
+
+```{r sweep-plot-setup, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+grid$delta <- factor(grid$delta, levels = c(3, 5, 7))
+nstar <- data.frame(delta = factor(c(3, 5, 7), levels = c(3, 5, 7)))
+nstar$N <- ceiling((2 * 20 * (qnorm(0.975) + qnorm(0.80)) / c(3, 5, 7))^2)
+nstar$power <- 0.80
+ramp <- c("3" = "#4A90C2", "5" = "#1F5F8B", "7" = "#0B2E52")
+```
+
+```{r sweep-plot, echo=FALSE, fig.width=7.4, fig.height=3.3, dev="png", dpi=300, fig.align="center"}
+ggplot(grid, aes(N, power, colour = delta)) +
+    geom_hline(
+        yintercept = 0.80,
+        linetype = "dashed",
+        colour = "#B41E1E",
+        linewidth = 0.4
+    ) +
+    geom_line(linewidth = 0.85) +
+    geom_point(data = nstar, size = 1.9, colour = "#B41E1E") +
+    geom_text(
+        data = nstar,
+        aes(label = N),
+        vjust = 1.9,
+        hjust = -0.15,
+        size = 3,
+        colour = "#B41E1E",
+        show.legend = FALSE
+    ) +
+    scale_colour_manual(values = ramp, name = "Assumed effect (points):") +
+    scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+    scale_x_continuous(breaks = seq(0, 1600, 200)) +
+    labs(x = "Total respondents (N)", y = "Power") +
+    theme_minimal(base_size = 10) +
+    theme(
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.25, colour = "grey88"),
+        axis.title = element_text(colour = "grey30"),
+        legend.position = "bottom",
+        legend.margin = margin(t = -4),
+        legend.key.width = unit(16, "pt"),
+        legend.title = element_text(colour = "grey30")
+    )
+```
+
+\vspace{0.1em}
+
+
+
+## Your Turn: Build the Sweep in R
+
+\small Your department is considering a six-week **peer-mentoring program** for first-year students, and can randomize students into it or onto a waitlist. The outcome is end-of-year GPA. The registrar tells you first-year GPA averages **3.05**, with a standard deviation of **0.45**.
+
+\vspace{0.5em}
+
+::: {.columns}
+:::: {.column width="44%"}
+
+```{=latex}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{cc}
+\toprule
+\multicolumn{2}{c}{\textbf{Given}} \\
+\midrule
+$\mu_c$  & 3.05 \\
+$\sigma$ & 0.45 \\
+$\alpha$ & 0.05 \\
+\bottomrule
+\end{tabular}
+\end{center}
+```
+
+::::
+:::: {.column width="54%"}
+
+```{=latex}
+\vspace{0.4em}
+\footnotesize
+\textbf{You decide:}
+
+\vspace{0.3em}
+
+\hspace{0.4em}\textbullet~Which GPA gains are plausible?
+
+\vspace{0.2em}
+
+\hspace{0.4em}\textbullet~How many students could you enroll?
+```
+
+::::
+:::
+
+\vspace{0.4em}
+
+
+## Your Turn: One Solution
+
+```{r exercise-solution, echo=TRUE}
+grid <- expand.grid(N = seq(50, 1000, by = 10), delta = c(0.10, 0.15, 0.20))
+grid$power <- power_calc(
+    mu_t = 3.05 + grid$delta,
+    mu_c = 3.05,
+    sigma = 0.45,
+    N = grid$N
+)
+
+for (d in unique(grid$delta)) {
+    ok <- grid$N[grid$delta == d & grid$power >= 0.80]
+    cat("effect", d, "GPA points -> N =", min(ok), "\n")
+}
+```
+
+\footnotesize Your effects and $N$ range will differ. The *structure* is the answer: one grid, one call, one threshold.
+
+## But what about literally any other case? 
+
+There are lots of reasons why, even for simple problems, we don't want to rely on such an approximation. For instance, what if you
+
+1. don't assume a two-tailed test? 
+2. have clustering and want some sort of random effect? 
+3. are taking a Bayesian approach? 
+4. are using nonparametric statistics?
+
+## What should we do in those other cases?
+
+* Even when power is not as clearly defined, there are still a whole range of things we still want to know about "power"
+* Let's start relaxing our definition of power. We can, for now, consider it as: 
+
+\vskip50pt 
+
+
+\begin{center}
+\textbf{The probability that we we \textcolor{red}{recover} a real effect, should one \textcolor{red}{exist}}
+\end{center}
+
+## What should we do in those other cases?
+
+What would it mean then, to approach asking questions about power or sample size in a more general sense where we may want to consider:
+
+\vskip20pt 
+::: {.columns}
+
+::: {.column width="60%"}
+
+* Non-parametric approaches
+* Bayesian approaches
+* Or even just moderately more complicated study designs? 
+
+\vskip20pt 
+
+\begin{center}
+\textbf{Well, we go gambling}
+\end{center}
+
+:::
+
+::: {.column width="40%"}
+
+![Oxford Casino Hotel](./images/casino.png){#fig-casino fig-alt="alt" height=50%}
+
+
+:::
+
+:::
+
+## An aside into the casinos at Monaco
+
+::: {.columns}
+
+::: {.column width="60%"}
+
+* Monte Carlo refers to a broad class of methods wherein you use repeated random sampling to obtain some form of numerical result 
+* It will be very useful for us when we cannot rely on a closed form solution (which, as a reminder, is in most cases!)
+* Essentially, we can use \textcolor{red}{randomness} to solve \textcolor{red}{deterministic} problems
+
+\vskip20pt 
+
+\textit{For any problem with probabilistic interpretation, it can be solved with Monte Carlo}
+
+:::
+
+::: {.column width="40%"}
+
+![Primary developer of the MC method, Stanisław Ulam, who was inspired by his uncle's gambling](./images/ulam.png){#fig-casino fig-alt="alt" height=50%}
+
+:::
+
+:::
+
+
+## An aside into the casinos at Monaco
+
+::: {.columns}
+
+::: {.column width="60%"}
+
+Let's imagine we want to know the answer to a gambling-related problem with a closed-form answer:
+
+\begin{center}
+What's the probability you win on red at the roulette table three spins in a row?
+\end{center}
+- There are 18 \textcolor{red}{red} pockets out of 38, so the exact answer is 
+
+$$
+P(\text{3 reds in a row}) = (18/38)^3 \approx 0.106
+$$
+:::
+
+::: {.column width="40%"}
+
+![A reasonably standard roulette table](./images/roulette.png){#fig-casino fig-alt="alt" height=50%}
+
+:::
+
+:::
+
+## An aside to the casinos at Monaco
+
+But we could also just... go to the casino 100,000 times:
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+spins <- matrix(runif(3 * 100000) < 18 / 38, ncol = 3) # each row is 3 spins
+mean(rowSums(spins) == 3) # proportion of rows where all three won
+```
+
+\begin{center}
+If we can describe \textcolor{red}{how the data are generated}, we can estimate \textit{any} probability by running the process many times!
+\end{center}
+
+## An aside into the casinos at Monaco
+
+\vskip0pt plus 1filll
+
+\begin{center}
+\Large
+And whether its the more traditional, rigid form, or our more flexible modern form, power is \textit{just a probability.}
+\end{center}
+
+\vskip0pt plus 1filll
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+In the parametric context, a Monte Carlo power analysis looks like this:
+
+1. **Generate** random data from some distribution with the properties that you expect your real data to have
+2. **Analyze** this randomly generated data set with your statistical analysis, whatever that is
+3. **Store** the value(s) of the analysis that you're interested in
+4. **Repeat** the above steps many times
+5. **Compute** power by looking at the proportion of times the statistic or value you're interested in was "correct"
+
+\vskip20pt
+
+\begin{center}
+This can be arbitrarily complex or simple!
+\end{center}
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+We can consider all of this to be done, for the sake of simplicity, by three piecemeal functions that we will want to write
+
+- `generate()`: make a fake data set that looks like your study
+- `analyze()`: run the analysis you'd *actually* run
+- `success()`: decide whether this run "recovered" the effect
+
+and one function that necessarily performs the actual simulation
+
+```{r}
+#| code-fold: false
+#| echo: true
+simulate_power <- function(n_sims, generate, analyze, success) {
+    hits <- replicate(n_sims, success(analyze(generate())))
+    mean(hits) # proportion of successful runs = power
+}
+```
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+We need to make a statement on how we think the data are being generated. For student $i$:
+
+$$
+\text{post}_i = \underbrace{\mu_c}_{\text{baseline}} + \underbrace{\delta \, T_i}_{\text{tutoring effect}} + \underbrace{\varepsilon_i}_{\text{noise}}, \qquad \varepsilon_i \sim N(0, \sigma^2)
+$$
+
+\vskip10pt
+
+- $\mu_c = 72$: the average score *without* tutoring
+- $T_i$: 1 if student $i$ was tutored, 0 if not, so tutored students get an "effect" of $\delta = 3$
+- $\varepsilon_i$: our random noise with $\sigma = 10$
+
+\vskip10pt
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+Let's start with our function that generates data based on our student tutoring example from before.
+
+```{r}
+#| code-fold: false
+#| echo: true
+gen_basic <- function(n = 350, effect = 3, sd = 10) {
+    treat <- rep(0:1, each = n / 2) # half control, half tutored
+    post <- 72 + effect * treat + rnorm(n, mean = 0, sd = sd)
+    data.frame(treat, post)
+}
+
+head(gen_basic())
+```
+
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+```{r}
+#| code-fold: false
+#| echo: false
+#| fig-height: 3
+library(ggplot2)
+
+set.seed(2026)
+dat <- gen_basic()
+
+ggplot(
+  dat,
+  aes(x = post, fill = factor(treat, labels = c("Control", "Tutored")))
+) +
+  geom_density(alpha = 0.5) +
+  geom_vline(xintercept = c(72, 75), linetype = "dashed") + # true means
+  labs(x = "End-of-term score", y = "Density", fill = NULL) +
+  theme_minimal()
+```
+
+## So, how do we do a Monte Carlo simulation, anyways?
+
+```{r}
+#| code-fold: false
+#| echo: true
+analyze_lm <- function(dat) {
+  fit <- lm(post ~ treat, data = dat) # same as an equal-variance t-test
+  summary(fit)$coefficients["treat", ] # estimate, SE, t, p for treat
+}
+
+success_sig <- function(est) {
+  est[["Pr(>|t|)"]] < 0.05 # did we reject the null?
+}
+
+analyze_lm(gen_basic())
+```
+
+## Does the casino agree with our nice equation??
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+simulate_power(
+    n_sims = 2000,
+    generate = gen_basic,
+    analyze = analyze_lm,
+    success = success_sig
+)
+```
+
+\vskip10pt
+
+- Pretty close for only 2000 simulations! 
+
+
+## Does the casino agree with our nice equation??
+
+- It's worth noting that the simulation has its own error! With $S$ simulations, the Monte Carlo standard error is
+
+$$
+\text{SE} = \sqrt{\frac{p(1-p)}{S}}
+$$
+
+\begin{center}
+Want a more precise answer? \textbf{Go to the casino more times.}
+\end{center}
+
+## What if we make this more complicated, arbitrarily so?
+
+I suspect that schools know a lot about their students *before* the program starts. Say we also have each student's **pre-test score**. Our model for student $i$ becomes:
+
+$$
+\text{pre}_i \sim N(70, \sigma^2)
+$$
+
+$$
+\text{post}_i = \underbrace{\mu_c}_{\text{baseline}} + 
+\underbrace{\rho\,(\text{pre}_i - 70)}_{\text{what we knew already}} + 
+\underbrace{\delta \, T_i}_{\text{tutoring effect}} + 
+\underbrace{\varepsilon_i}_{\text{noise}}, 
+\qquad \varepsilon_i \sim N\big(0,\ \sigma^2(1-\rho^2)\big)
+$$
+
+\vskip05pt
+
+- $\rho = 0.6$ is the correlation between pre-test and end-of-term scores
+- Students who were above average before tend to stay above average
+- The total spread of scores is still $\sigma = 10$
+
+## What if we make this more complicated, arbitrarily so?
+
+* We only need to change **two** of our three pieces:
+
+```{r}
+#| code-fold: false
+#| echo: true
+gen_pretest <- function(n = 350, effect = 3, sd = 10, rho = 0.6) {
+  treat <- rep(0:1, each = n / 2)
+  pre <- rnorm(n, mean = 70, sd = sd)
+  post <- 72 +
+    rho * (pre - 70) +
+    effect * treat +
+    rnorm(n, mean = 0, sd = sd * sqrt(1 - rho^2))
+  data.frame(treat, pre, post)
+}
+
+analyze_ancova <- function(dat) {
+  summary(lm(post ~ treat + pre, data = dat))$coefficients["treat", ]
+}
+```
+
+## What if we make this more complicated, arbitrarily so?
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+simulate_power(2000, gen_pretest, analyze_lm, success_sig)
+simulate_power(2000, gen_pretest, analyze_ancova, success_sig)
+```
+
+\vskip10pt
+
+- We can see that our power jumps from about 80\% to about **94\%**
+- Power is a property of the \textcolor{red}{design \textit{and} the analysis}, not just of $N$
+- If we were really strapped for students to enroll, this could be really helpful to know!
+
+\small
+(To be fair: this case still has a closed form ($\sigma$ just becomes $\sigma\sqrt{1-\rho^2}$) but we didn't need to know that!)
+
+## Let's make it even **more** complicated! 
+
+Consider the classic problem of dropout. Let's make the following assumptions about our study (maybe we base this on some sort of past experience running such a study):
+
+- Students who are doing *badly* are more likely to stop showing up
+- The **control group loses more students** (here, about 23\% vs. 11\%)
+
+\vskip20pt
+
+\begin{center}
+You may ask: \textit{Is there a formula for the power of this study?} \\
+\vskip5pt
+\textbf{Not really.} Dropout depends on an \textit{unrealized outcome}, so the \textcolor{red}{sample size}, the \textcolor{red}{effect we estimate}, \textit{and} the \textcolor{red}{noise} all change at once!! What a pain!!
+\end{center}
+
+## Let's make it even **more** complicated! 
+
+But we don't need a formula! We can use our computers!! We just need to describe how the data are generated:
+
+```{r}
+#| code-fold: false
+#| echo: true
+gen_dropout <- function(n = 350, effect = 3, sd = 10, rho = 0.6) {
+    dat <- gen_pretest(n, effect, sd, rho)
+    p_drop <- plogis(-2.2 + 0.7 * (dat$treat == 0) - 0.12 * (dat$post - 72))
+    dat[runif(n) > p_drop, ] # we only observe the students who stayed
+}
+
+nrow(gen_dropout()) # out of the 350 we enrolled
+```
+
+## Let's make it even **more** complicated! 
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+simulate_power(2000, gen_pretest, analyze_ancova, success_sig)
+simulate_power(2000, gen_dropout, analyze_ancova, success_sig)
+```
+
+\vskip10pt
+
+- Remember, dropout doesn't just shrink our sample!
+
+## Let's make it even **more** complicated! 
+
+Because we simulated the data, we *know* the true effect is 3. So we can check:
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+estimates <- replicate(2000, analyze_ancova(gen_dropout())[["Estimate"]])
+mean(estimates)
+```
+
+\vskip10pt
+
+- Since students doing poorly *leave*, this biases our results for the control group up
+- We appear to **underestimate** the effect
+
+\begin{center}
+Unfortuantely, there's no formula for this!!
+\end{center}
+
+## Let's make it even **more** complicated! 
+
+Remember our relaxed definition: \textbf{the probability that we \textcolor{red}{recover} a real effect, should one \textcolor{red}{exist}}.
+
+* "Recover" doesn't have to mean a p-value. 
+
+```{r}
+#| code-fold: false
+#| echo: true
+success_close <- function(est) abs(est[["Estimate"]] - 3) < 1.5
+
+set.seed(2026)
+simulate_power(2000, gen_pretest, analyze_ancova, success_close) # no dropout
+simulate_power(2000, gen_dropout, analyze_ancova, success_close) # dropout
+```
+
+## Let's make it even **more** complicated! 
+
+\large
+There are other options for recovery! You could ask when: 
+
+* the CI excludes zero
+* the CI is narrower than some width
+* the sign is right
+* a posterior probability exceeds 0.9 or 0.95
+* and much more!
+
+## So, how many students do we need?!
+
+Just like before, we want to find the $N$ that gets us to 80\%. Now, instead of inverting a formula, we try a grid of sample sizes:
+
+```{r}
+#| code-fold: false
+#| echo: true
+set.seed(2026)
+ns <- seq(150, 500, by = 50)
+powers <- sapply(ns, \(n) {
+  simulate_power(
+    1000,
+    generate = \() gen_dropout(n = n),
+    analyze = analyze_ancova,
+    success = success_sig
+  )
+})
+```
+
+## So, how many students do we need?
+
+```{r}
+#| code-fold: false
+#| echo: false
+#| fig-height: 3.5
+plot(
+  ns,
+  powers,
+  type = "b",
+  pch = 19,
+  ylim = c(0, 1),
+  xlab = "Students enrolled (N)",
+  ylab = "Simulated power"
+)
+abline(h = 0.8, lty = 2, col = "red")
+```
+
+\begin{center}
+\small With dropout, we need to enrol \textbf{around 450 students}. Alas, more students only buys \textit{power} because the estimate is \textcolor{red}{still biased}.
+\end{center}
+
+## Your turn!
+
+We provided you with a template file to use for htis part, \texttt{power-sim-template.R}. Use this and fill in every \texttt{\_\_\_}. Use your own study, or, if nothing comes to mind, the tutoring study from earlier is good practice too!
+
+Ask yourself:
+
+1. What are my baseline, effect, and noise values, and where did I get those numbers?
+2. \texttt{generate()} -- Does this dataset look like something my study could produce?
+3. \texttt{analyze()} -- What would I \textit{actually} run on the real data? 
+4. \texttt{success()} --  What counts as "recovering" the effect? 
+5. Estimate power -- With \textit{no} effect, do I get about 5\%? A significance-based \texttt{success()} should succeed about 5% of the time
+6. Perform a sweep over $N$ -- Where does my curve cross 80\%? 
+7. Now, \textcolor{statsecondary}{\textbf{add a complication}} -- Maybe unequal groups, a covariate, a skewed outcome, with these how much power do I lose? 
+
