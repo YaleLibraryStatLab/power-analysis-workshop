@@ -2,50 +2,12 @@
 # Statistical Power --- workshop code (R)
 # Yale Library | StatLab
 #
-# Every code block from presentation/R/statistical-power-r.qmd, in slide order.
+# The code from presentation/R/statistical-power-r.qmd, in slide order,
+# including the solutions to the group activities and the appendix.
 # Runnable top to bottom:  Rscript scripts/power-analysis.R
 # =============================================================================
 
 library(ggplot2)
-
-
-# -----------------------------------------------------------------------------
-# What Power Looks Like
-# -----------------------------------------------------------------------------
-cv <- qnorm(0.975)
-zz <- seq(-3.6, 6.2, length.out = 700)
-dd <- rbind(
-  data.frame(z = zz, y = dnorm(zz, 0),    curve = "If the null is true"),
-  data.frame(z = zz, y = dnorm(zz, 2.24), curve = "If the 7-point effect is real"))
-
-power_picture <- ggplot(dd, aes(z, y)) +
-  geom_area(data = subset(dd, curve != "If the null is true" & z >= cv),
-            fill = "#4A90C2", alpha = 0.55) +
-  geom_area(data = subset(dd, curve == "If the null is true" & z >= cv),
-            fill = "#B41E1E", alpha = 0.70) +
-  geom_line(aes(colour = curve), linewidth = 0.75) +
-  geom_vline(xintercept = cv, colour = "grey20", linewidth = 0.4, linetype = "dashed") +
-  annotate("text", x = 3.6, y = 0.20, label = "power = 0.61",
-           colour = "#0B2E52", size = 3.1, fontface = "bold") +
-  annotate("text", x = 2.45, y = 0.045, label = "alpha/2 == 0.025", parse = TRUE,
-           colour = "#B41E1E", size = 2.7, hjust = 0) +
-  annotate("text", x = cv, y = 0.43, label = "reject to the right of 1.96",
-           colour = "grey20", size = 2.7, hjust = -0.04) +
-  scale_colour_manual(values = c("If the null is true" = "#B41E1E",
-                                 "If the 7-point effect is real" = "#0B2E52"),
-                      name = NULL) +
-  # 1.96 and 2.24 nearly collide on the axis; drop the second label a row
-  scale_x_continuous(breaks = c(0, cv, 2.24), labels = c("0", "1.96", "\n2.24")) +
-  labs(x = "Effect, measured in standard errors", y = NULL) +
-  theme_minimal(base_size = 9) +
-  theme(panel.grid.minor = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.major.x = element_line(linewidth = 0.25, colour = "grey88"),
-        axis.text.y = element_blank(),
-        axis.title = element_text(colour = "grey30"),
-        legend.position = "bottom", legend.margin = margin(t = -6))
-
-print(power_picture)
 
 
 # -----------------------------------------------------------------------------
@@ -55,263 +17,294 @@ print(power_picture)
 #
 #   Phi = pnorm        Phi^-1 = qnorm
 # -----------------------------------------------------------------------------
+
 power_calc <- function(mu_t, mu_c, sigma, N, alpha = 0.05) {
-  z  <- abs(mu_t - mu_c) * sqrt(N) / (2 * sigma)
+  z <- abs(mu_t - mu_c) * sqrt(N) / (2 * sigma)
   cv <- qnorm(1 - alpha / 2)
-  pnorm(z - cv) + pnorm(-z - cv)     # both rejection tails
+  pnorm(z - cv) + pnorm(-z - cv) # both rejection tails
 }
 
-# The running example: 164 respondents, a 7-point effect, sigma = 20.
-cat("\n-- running example --\n")
-print(power_calc(mu_t = 57, mu_c = 50, sigma = 20, N = 164))   # 0.6107
+# The running example: 164 respondents, a 7-point effect, sigma = 20
+power_calc(mu_t = 57, mu_c = 50, sigma = 20, N = 164)
+
+# Your Turn 1: the tutoring study, 400 students, 3-point effect, sigma = 10
+power_calc(mu_t = 75, mu_c = 72, sigma = 10, N = 400)
+
+
+# -----------------------------------------------------------------------------
+# The Smallest Effect This Study Can Detect
+# -----------------------------------------------------------------------------
+
+mde_calc <- function(sigma, N, alpha = 0.05, power = 0.80) {
+  (qnorm(1 - alpha / 2) + qnorm(power)) * 2 * sigma / sqrt(N)
+}
+
+mde_calc(sigma = 20, N = c(164, 257, 400, 800, 1396))
+
+# Solved for N instead
+n_required <- function(delta, sigma, alpha = 0.05, power = 0.80) {
+  ceiling(4 * sigma^2 * (qnorm(1 - alpha / 2) + qnorm(power))^2 / delta^2)
+}
+
+n_required(delta = c(3, 5, 7), sigma = 20)
 
 
 # -----------------------------------------------------------------------------
 # Power Across a Range of N
 # -----------------------------------------------------------------------------
-grid <- expand.grid(N     = seq(60, 1600, by = 10),
-                    delta = c(3, 5, 7))
 
-grid$power <- power_calc(mu_t  = 50 + grid$delta,
-                         mu_c  = 50,
-                         sigma = 20,
-                         N     = grid$N)
+grid <- expand.grid(N = seq(60, 1600, by = 10), delta = c(3, 5, 7))
 
-cat("\n-- sweep, first rows --\n")
-print(head(grid, 3))
+grid$power <- power_calc(
+  mu_t = 50 + grid$delta,
+  mu_c = 50,
+  sigma = 20,
+  N = grid$N
+)
+
+head(grid, 3)
 
 
 # -----------------------------------------------------------------------------
 # How Many Respondents Do We Need?
 # -----------------------------------------------------------------------------
-grid$delta <- factor(grid$delta, levels = c(3, 5, 7))
-nstar <- data.frame(delta = factor(c(3, 5, 7), levels = c(3, 5, 7)))
-nstar$N <- ceiling((2 * 20 * (qnorm(0.975) + qnorm(0.80)) / c(3, 5, 7))^2)
-nstar$power <- 0.80
-ramp <- c("3" = "#4A90C2", "5" = "#1F5F8B", "7" = "#0B2E52")
 
-sweep_plot <- ggplot(grid, aes(N, power, colour = delta)) +
-  geom_hline(yintercept = 0.80, linetype = "dashed",
-             colour = "#B41E1E", linewidth = 0.4) +
+grid$delta <- factor(grid$delta, levels = c(3, 5, 7))
+nstar <- data.frame(
+  delta = factor(c(3, 5, 7), levels = c(3, 5, 7)),
+  N = n_required(delta = c(3, 5, 7), sigma = 20),
+  power = 0.80
+)
+
+ggplot(grid, aes(N, power, colour = delta)) +
+  geom_hline(yintercept = 0.80, linetype = "dashed", colour = "#B41E1E") +
   geom_line(linewidth = 0.85) +
   geom_point(data = nstar, size = 1.9, colour = "#B41E1E") +
-  geom_text(data = nstar, aes(label = N), vjust = 1.9, hjust = -0.15,
-            size = 3, colour = "#B41E1E", show.legend = FALSE) +
-  scale_colour_manual(values = ramp, name = "Assumed effect (points):") +
+  geom_text(
+    data = nstar,
+    aes(label = N),
+    vjust = 1.9,
+    hjust = -0.15,
+    colour = "#B41E1E",
+    show.legend = FALSE
+  ) +
   scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
-  scale_x_continuous(breaks = seq(0, 1600, 200)) +
-  labs(x = "Total respondents (N)", y = "Power") +
-  theme_minimal(base_size = 10) +
-  theme(panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(linewidth = 0.25, colour = "grey88"),
-        axis.title = element_text(colour = "grey30"),
-        legend.position = "bottom", legend.margin = margin(t = -4),
-        legend.key.width = unit(16, "pt"),
-        legend.title = element_text(colour = "grey30"))
-
-print(sweep_plot)
-
-cat("\n-- N needed for 80% power, by assumed effect --\n")
-print(nstar[, c("delta", "N")])       # 1396, 503, 257
+  labs(
+    x = "Total respondents (N)",
+    y = "Power",
+    colour = "Assumed effect (points):"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
 
 # -----------------------------------------------------------------------------
-# Your Turn: Build the Sweep  (peer-mentoring / GPA)
+# Your Turn 2 (groups): A Sleep Workshop on a Budget --- one solution
 # -----------------------------------------------------------------------------
-cat("\n-- exercise: peer mentoring --\n")
-grid <- expand.grid(N     = seq(50, 1000, by = 10),
-                    delta = c(0.10, 0.15, 0.20))
-grid$power <- power_calc(mu_t = 3.05 + grid$delta, mu_c = 3.05,
-                         sigma = 0.45, N = grid$N)
 
-for (d in unique(grid$delta)) {
-  ok <- grid$N[grid$delta == d & grid$power >= 0.80]
-  cat("effect", d, "GPA points -> N =", min(ok), "\n")
+grid <- expand.grid(N = seq(50, 1500, by = 10), delta = c(10, 15, 25))
+grid$power <- power_calc(400 + grid$delta, 400, sigma = 60, N = grid$N)
+
+# smallest N with 80% power, for effects of 10, 15, and 25 minutes
+sapply(c(10, 15, 25), \(d) min(grid$N[grid$delta == d & grid$power >= 0.8]))
+
+mde_calc(sigma = 60, N = 12000 / 40) # what the budget can detect
+
+
+# -----------------------------------------------------------------------------
+# Monte Carlo Simulation: Simulating the Spins
+# -----------------------------------------------------------------------------
+
+set.seed(2026)
+spins <- matrix(runif(3 * 100000) < 18 / 38, ncol = 3) # each row is 3 spins
+mean(rowSums(spins) == 3) # proportion of rows where all three are red
+(18 / 38)^3 # the exact answer
+
+
+# -----------------------------------------------------------------------------
+# The Simulation Recipe
+# -----------------------------------------------------------------------------
+
+simulate_power <- function(n_sims, generate, analyze, success) {
+  hits <- replicate(n_sims, success(analyze(generate())))
+  mean(hits) # proportion of successful runs = power
 }
 
 
 # -----------------------------------------------------------------------------
-# Anatomy of One Simulation
+# Generating Data for the Tutoring Study
 # -----------------------------------------------------------------------------
-cat("\n-- three single studies --\n")
-set.seed(3)
-one_study <- function() {
-  z <- sample(rep(0:1, each = 82))             # RANDOMLY assign the message
-  y <- rnorm(164, mean = 50 + 7 * z, sd = 20)  # ESTIMAND: the truth is 7
-  coef(summary(lm(y ~ z)))["z", 4]             # ESTIMATOR: what you run
+
+gen_basic <- function(n = 350, effect = 3, sd = 10) {
+  treat <- rep(0:1, each = n / 2) # half control, half tutored
+  post <- 72 + effect * treat + rnorm(n, mean = 0, sd = sd)
+  data.frame(treat, post)
 }
 
-print(c(study_1 = one_study(), study_2 = one_study(), study_3 = one_study()))
+head(gen_basic(), 3)
 
 
 # -----------------------------------------------------------------------------
-# Building a Monte Carlo simulation for Power
+# Analyzing It and Defining Success
 # -----------------------------------------------------------------------------
-sim_power <- function(N, tau, sigma, S = 2000) {
-  mean(replicate(S, {
-    z <- sample(rep(0:1, length.out = N))
-    y <- rnorm(N, 50 + tau * z, sigma)  # the ESTIMAND
-    coef(summary(lm(y ~ z)))["z", 4]    # the ESTIMATOR
-  }) < 0.05)
+
+analyze_lm <- function(dat) {
+  fit <- lm(post ~ treat, data = dat) # same as an equal-variance t-test
+  summary(fit)$coefficients["treat", ] # estimate, SE, t, p for treat
 }
 
-cat("\n-- simulation vs closed form --\n")
-set.seed(11)
-print(c(simulation = sim_power(164, 7, 20),
-        formula    = power_calc(57, 50, 20, 164)))
-
-
-# -----------------------------------------------------------------------------
-# Branch 1: Same Estimand, Better Estimator
-# -----------------------------------------------------------------------------
-sim_cov <- function(adjust, N = 164, S = 2000, tau = 7) {
-  mean(replicate(S, {
-    z <- sample(rep(0:1, length.out = N)); x <- rnorm(N)  # x = baseline
-    y <- 50 + tau * z + 12 * x + rnorm(N, 0, 16) # cor(x, y) = 0.6
-    fit <- if (adjust) lm(y ~ z + x) else lm(y ~ z)
-    coef(summary(fit))["z", 4]
-  }) < 0.05)
+success_sig <- function(est) {
+  est[["Pr(>|t|)"]] < 0.05 # did we reject the null?
 }
 
-cat("\n-- precision covariate --\n")
-set.seed(11)
-print(c(unadjusted = sim_cov(FALSE), adjusted = sim_cov(TRUE)))
+analyze_lm(gen_basic())
 
 
 # -----------------------------------------------------------------------------
-# The Smallest Effect the Regression Can See
+# Does the Simulation Agree with the Formula?
 # -----------------------------------------------------------------------------
-cat("\n-- MDE by simulation, N = 164, adjusted estimator --\n")
-set.seed(5)
-taus <- 5:9                                    # candidate effects, in points
-pw   <- sapply(taus, function(t) sim_cov(TRUE, S = 1000, tau = t))
 
-mde <- function(p, tau, S = 1000, target = 0.80) {   # fit, then invert
-  b <- coef(glm(cbind(round(p*S), S - round(p*S)) ~ log(tau), binomial))
-  exp((qlogis(target) - b[[1]]) / b[[2]])
+set.seed(2026)
+simulate_power(
+  n_sims = 2000,
+  generate = gen_basic,
+  analyze = analyze_lm,
+  success = success_sig
+)
+power_calc(mu_t = 75, mu_c = 72, sigma = 10, N = 350) # the formula
+
+sqrt(0.80 * (1 - 0.80) / 2000) # Monte Carlo standard error at power 0.80
+
+
+# -----------------------------------------------------------------------------
+# Adding a Pre-Test
+# -----------------------------------------------------------------------------
+
+gen_pretest <- function(n = 350, effect = 3, sd = 10, rho = 0.6) {
+  treat <- rep(0:1, each = n / 2)
+  pre <- rnorm(n, mean = 70, sd = sd)
+  post <- 72 +
+    rho * (pre - 70) +
+    effect * treat +
+    rnorm(n, mean = 0, sd = sd * sqrt(1 - rho^2))
+  data.frame(treat, pre, post)
 }
-print(c(setNames(round(pw, 2), taus), MDE = round(mde(pw, taus), 2)))
+
+analyze_ancova <- function(dat) {
+  summary(lm(post ~ treat + pre, data = dat))$coefficients["treat", ]
+}
+
+set.seed(2026)
+simulate_power(2000, gen_pretest, analyze_lm, success_sig) # no pre-test
+simulate_power(2000, gen_pretest, analyze_ancova, success_sig) # pre-test
 
 
 # -----------------------------------------------------------------------------
-# What If x Is a Confounder Instead?
+# Your Turn 3 (groups): The Tutoring Study with Dropout --- solutions
 # -----------------------------------------------------------------------------
-cat("\n-- x as confounder (z NOT randomized) --\n")
-set.seed(3)
-sim_obs <- function(adjust, N = 164, S = 2000) {
-  out <- replicate(S, {
-    x <- rnorm(N); z <- rbinom(N, 1, plogis(1.2 * x))  # z DEPENDS on x
-    y <- 50 + 7 * z + 12 * x + rnorm(N, 0, 16)         # truth is still 7
-    fit <- if (adjust) lm(y ~ z + x) else lm(y ~ z)
-    c(coef(fit)["z"], coef(summary(fit))["z", 4]) })
-  c(estimate = mean(out[1, ]), rejection = mean(out[2, ] < 0.05)) }
 
-obs <- rbind(`y ~ z` = sim_obs(FALSE), `y ~ z + x` = sim_obs(TRUE))
-print(obs)
-# The unadjusted model rejects ~100% of the time, but that is NOT power:
-# its estimate is centred far above the true 7.
+gen_dropout <- function(n = 350, effect = 3, sd = 10, rho = 0.6) {
+  dat <- gen_pretest(n, effect, sd, rho)
+  p_drop <- plogis(-2.2 + 0.7 * (dat$treat == 0) - 0.12 * (dat$post - 72))
+  dat[runif(n) > p_drop, ] # we only observe the students who stayed
+}
+
+nrow(gen_dropout()) # out of the 350 we enrolled
+
+# Power and bias
+set.seed(2026)
+simulate_power(2000, gen_dropout, analyze_ancova, success_sig)
+estimates <- replicate(2000, analyze_ancova(gen_dropout())[["Estimate"]])
+mean(estimates) # the true effect is 3
+
+# Other definitions of success
+success_close <- function(est) abs(est[["Estimate"]] - 3) < 1.5
+
+set.seed(2026)
+simulate_power(2000, gen_pretest, analyze_ancova, success_close) # no dropout
+simulate_power(2000, gen_dropout, analyze_ancova, success_close) # dropout
+
+# How many students?
+set.seed(2026)
+ns <- seq(150, 500, by = 50)
+powers <- sapply(ns, \(n) {
+  simulate_power(
+    1000,
+    generate = \() gen_dropout(n = n),
+    analyze = analyze_ancova,
+    success = success_sig
+  )
+})
+
+ggplot(data.frame(N = ns, power = powers), aes(N, power)) +
+  geom_hline(yintercept = 0.80, linetype = "dashed", colour = "#B41E1E") +
+  geom_line(colour = "#0B2E52") +
+  geom_point(colour = "#0B2E52") +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+  labs(x = "Students enrolled (N)", y = "Simulated power") +
+  theme_minimal()
 
 
 # -----------------------------------------------------------------------------
-# Branch 2: Same Study, Different Estimand
+# Appendix: Power for an Interaction
 # -----------------------------------------------------------------------------
-cat("\n-- ATE vs interaction --\n")
+
 set.seed(11)
 p <- replicate(2000, {
-  z <- sample(rep(0:1, each = 82)); g <- rep(0:1, 82)
+  z <- sample(rep(0:1, each = 82))
+  g <- rep(0:1, 82)
   y <- rnorm(164, 50 + 4 * z + 6 * z * g + 2 * g, 20)
-  c(ate = coef(summary(lm(y ~ z)))["z", 4],
-    int = coef(summary(lm(y ~ z * g)))["z:g", 4])
+  c(
+    ate = coef(summary(lm(y ~ z)))["z", 4],
+    int = coef(summary(lm(y ~ z * g)))["z:g", 4]
+  )
 })
-print(rowMeans(p < 0.05))
+rowMeans(p < 0.05) # N = 164
 
 
 # -----------------------------------------------------------------------------
-# Your Turn: A Scaffold   (template --- fill in and un-comment)
+# Appendix: What If x Is a Confounder?
 # -----------------------------------------------------------------------------
-# one_study <- function(N) {
-#   z <- sample(rep(0:1, length.out = N))  # 1. ASSIGN: randomize treatment
-#
-#   y <- rnorm(N, mean = ???, sd = ???)    # 2. GENERATE: your ESTIMAND
-#
-#   coef(summary(lm(y ~ z)))["z", 4]       # 3. ANALYSE: your ESTIMATOR
-# }
-#
-# power_for <- function(N, S = 1000) mean(replicate(S, one_study(N)) < 0.05)
-#
-# sapply(seq(100, 600, by = 50), power_for)
 
-
-# -----------------------------------------------------------------------------
-# Appendix: Two Loops, Not One   (outer = designs, inner = draws)
-# -----------------------------------------------------------------------------
-# grid <- expand.grid(N = seq(120, 300, by = 30),      # OUTER
-#                     adjust = c(FALSE, TRUE))
-# grid$power <- mapply(function(n, a) sim_cov(a, n),   # INNER runs inside
-#                      grid$N, grid$adjust)
-
-
-# -----------------------------------------------------------------------------
-# Appendix: Sweeping the Simulation
-# -----------------------------------------------------------------------------
-cat("\n-- simulated power across N --\n")
-set.seed(4); Ns <- seq(120, 300, by = 30)
-sweep_sim <- data.frame(N = Ns,
-  unadjusted = sapply(Ns, function(n) sim_cov(FALSE, n, S = 1500)),
-  adjusted   = sapply(Ns, function(n) sim_cov(TRUE,  n, S = 1500)))
-print(sweep_sim)
-
-
-# -----------------------------------------------------------------------------
-# Appendix: Finding the Cutoff by Simulation
-# -----------------------------------------------------------------------------
-long <- data.frame(
-  N         = rep(sweep_sim$N, 2),
-  power     = c(sweep_sim$unadjusted, sweep_sim$adjusted),
-  estimator = rep(c("y ~ z", "y ~ z + x"), each = nrow(sweep_sim)))
-
-sim_plot <- ggplot(long, aes(N, power, colour = estimator)) +
-  geom_hline(yintercept = 0.80, linetype = "dashed", colour = "#B41E1E",
-             linewidth = 0.4) +
-  geom_line(linewidth = 0.8) + geom_point(size = 1.7) +
-  scale_colour_manual(values = c("y ~ z" = "#4A90C2", "y ~ z + x" = "#0B2E52"),
-                      name = NULL) +
-  scale_y_continuous(limits = c(0.4, 1), breaks = seq(0.4, 1, 0.2)) +
-  labs(x = "Total respondents (N)", y = "Simulated power") +
-  theme_minimal(base_size = 8) +
-  theme(panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(linewidth = 0.25, colour = "grey88"),
-        axis.title = element_text(colour = "grey30"),
-        legend.position = "right", legend.key.width = unit(14, "pt"),
-        plot.margin = margin(2, 2, 2, 2))
-
-print(sim_plot)
-
-# Do NOT run approx() straight over simulated power: noise makes the curve
-# non-monotone, and approx() warns rather than errors. Fit a curve and invert.
-cutoff <- function(p, N, S = 1500, target = 0.80) {   # fit, then invert
-  b <- coef(glm(cbind(round(p*S), S - round(p*S)) ~ log(N), binomial))
-  exp((qlogis(target) - b[1]) / b[2])
+set.seed(3)
+sim_obs <- function(adjust, N = 164) {
+  out <- replicate(2000, {
+    x <- rnorm(N)
+    z <- rbinom(N, 1, plogis(1.2 * x)) # z DEPENDS on x
+    y <- 50 + 7 * z + 12 * x + rnorm(N, 0, 16) # truth is still 7
+    fit <- if (adjust) lm(y ~ z + x) else lm(y ~ z)
+    c(coef(fit)["z"], coef(summary(fit))["z", 4])
+  })
+  c(estimate = mean(out[1, ]), rejection = mean(out[2, ] < 0.05))
 }
+rbind(`y ~ z` = sim_obs(FALSE), `y ~ z + x` = sim_obs(TRUE))
 
-cat("\n-- N at 80% power, read off the simulation --\n")
-print(round(c(adjusted   = cutoff(sweep_sim$adjusted,   sweep_sim$N),
-              unadjusted = cutoff(sweep_sim$unadjusted, sweep_sim$N))))
+
+# -----------------------------------------------------------------------------
+# Appendix: When You Randomize Groups, Not People
+# -----------------------------------------------------------------------------
+
+deff <- 1 + (25 - 1) * 0.15 # groups of 25, intra-cluster correlation 0.15
+ceiling(n_required(delta = 7, sigma = 20) * deff)
 
 
 # -----------------------------------------------------------------------------
 # Appendix: Clustering in Simulation
 # -----------------------------------------------------------------------------
-cat("\n-- clustered assignment, analysed two ways --\n")
+
 set.seed(7)
-n_clus <- 12; m <- 25                  # 300 students in 12 classrooms
-sb <- 0.45 * sqrt(0.15); sw <- 0.45 * sqrt(0.85)
-p <- replicate(1500, {
-  zc <- sample(rep(0:1, each = n_clus / 2))  # assign CLASSROOMS, not students
-  u  <- rnorm(n_clus, 0, sb)           # classroom-level shock
-  y  <- rnorm(n_clus * m, rep(3.05 + 0.15 * zc + u, each = m), sw)
-  id <- rep(1:n_clus, each = m)
-  c(as_individuals = t.test(y ~ rep(zc, each = m))$p.value,
-    as_clusters    = t.test(tapply(y, id, mean) ~ zc)$p.value)
-})
-print(rowMeans(p < 0.05))
+sim_clus <- function(tau, k = 12, m = 25) {
+  rowMeans(
+    replicate(1500, {
+      zc <- sample(rep(0:1, each = k / 2)) # assign GROUPS, not people
+      u <- rnorm(k, 0, 20 * sqrt(0.15)) # group-level shock
+      y <- rnorm(k * m, rep(50 + tau * zc + u, each = m), 20 * sqrt(0.85))
+      c(
+        as_individuals = t.test(y ~ rep(zc, each = m))$p.value,
+        as_groups = t.test(tapply(y, rep(1:k, each = m), mean) ~ zc)$p.value
+      )
+    }) <
+      0.05
+  )
+}
+rbind(`no effect` = sim_clus(0), `7-point effect` = sim_clus(7))
