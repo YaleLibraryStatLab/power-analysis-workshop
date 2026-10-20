@@ -1,0 +1,242 @@
+---
+format:
+  pdf:
+    pdf-engine: xelatex
+    documentclass: article
+    papersize: letter
+    geometry:
+      - margin=0.7in
+    fontsize: 10pt
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \usepackage{booktabs}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \usepackage{fancyhdr}
+        \usepackage{mdframed}
+        \setmainfont{CMU Serif}
+
+        \definecolor{statprimary}{HTML}{2c3e50}
+        \definecolor{statsecondary}{HTML}{2980b9}
+        \definecolor{statyale}{HTML}{00356b}
+        \definecolor{stataccbg}{HTML}{e8f4f8}
+        \definecolor{statorange}{HTML}{FF6600}
+        \definecolor{statexbg}{HTML}{e6eef5}
+
+        \color{statprimary}
+
+        \pagestyle{fancy}
+        \fancyhf{}
+        \renewcommand{\headrulewidth}{0pt}
+        \fancyfoot[L]{\footnotesize\textcolor{statyale}{Yale Library $|$ StatLab}}
+        \fancyfoot[R]{\footnotesize\textcolor{statprimary!60}{\thepage\ / \pageref{LastPage}}}
+        \usepackage{lastpage}
+
+        % Title-less shaded callout
+        \newmdenv[backgroundcolor=statexbg, linewidth=0pt,
+                  innertopmargin=7pt, innerbottommargin=7pt,
+                  innerleftmargin=9pt, innerrightmargin=9pt,
+                  skipabove=6pt, skipbelow=6pt]{notebox}
+
+        \setlength{\parindent}{0pt}
+        \setlength{\parskip}{0.4em}
+---
+
+```{=latex}
+\vspace{-1.2em}
+{\LARGE\textcolor{statyale}{\textbf{Statistical Power}} \hfill \normalsize\textcolor{statprimary!65}{Reference Handout}}
+
+\vspace{0.15em}
+{\color{statyale}\hrule height 1pt}
+\vspace{0.5em}
+
+```
+
+## The Power Formula
+
+```{=latex}
+\begin{notebox}
+\vspace{0.2em}
+\begin{center}
+$\displaystyle \text{power} \;=\; \Phi\!\left( \frac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma} \;-\; \Phi^{-1}\!\left(1-\frac{\alpha}{2}\right) \right)$
+\end{center}
+\vspace{0.1em}
+\end{notebox}
+
+\vspace{0.2em}
+
+Read it as a subtraction: \textbf{what you expect} $-$ \textbf{what you need} $=$ how much room you have. Feed that
+difference into the table.
+
+\vspace{0.3em}
+
+\begin{center}
+\small
+$\underbrace{\dfrac{|\mu_t - \mu_c|\sqrt{N}}{2\sigma}}_{\text{what you expect, in standard errors}} \qquad
+ \underbrace{\Phi^{-1}\!\left(1-\tfrac{\alpha}{2}\right)}_{\text{the bar you must clear}} \qquad
+ \underbrace{\text{their difference}}_{\text{look this up in the table}}$
+\end{center}
+```
+
+## The Minimum Detectable Effect (MDE)
+
+```{=latex}
+\begin{notebox}
+\vspace{0.2em}
+\begin{center}
+$\displaystyle \text{MDE} \;=\; \left(\Phi^{-1}\!\left(1-\tfrac{\alpha}{2}\right) + \Phi^{-1}(\text{target power})\right) \;\times\; \frac{2\sigma}{\sqrt{N}}$
+\end{center}
+\vspace{0.1em}
+\end{notebox}
+
+\vspace{0.2em}
+
+The same equation, solved for the effect instead of for power. At $\alpha = 0.05$ and 80\% target power the
+leading bracket is $1.96 + 0.84 = \mathbf{2.80}$.
+```
+
+## Notation
+
+```{=latex}
+\begin{center}
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.28}
+\begin{tabular}{c>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{9.6cm}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{What it is} \\
+\midrule
+$N$              & Sample size          & Total subjects collected, across both arms. \\
+$\mu_t$          & Treatment mean       & Average outcome under treatment. \\
+$\mu_c$          & Control mean         & Average outcome under control. \\
+$\mu_t - \mu_c$  & Effect size          & The true difference between the two means: the \textit{signal}. Abbreviated $\delta$ in code. \\
+$\sigma$         & Standard deviation   & How much outcomes vary from one another: the \textit{noise}. \\
+$\alpha$         & Significance level   & Type I error rate you tolerate --- claiming an effect when there is none. Sets the bar. \\
+$\beta$          & Type II error rate   & Probability of missing an effect that is real. \\
+power            & $1 - \beta$          & Probability of detecting an effect that is real. \\
+$\Phi$           & Normal CDF           & Area to the \textit{left} of a $z$-score. This is what the table gives you. \\
+$\Phi^{-1}$      & Inverse normal CDF   & Its inverse: hand it an area, it returns the $z$-score. \\
+\bottomrule
+\end{tabular}
+\end{center}
+```
+
+## Critical Values Worth Memorising
+
+```{=latex}
+\begin{center}
+\small
+\setlength{\tabcolsep}{11pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Quantity} & \textbf{Value} & \textbf{Where it shows up} \\
+\midrule
+$\Phi^{-1}(0.975)$ & \textcolor{statorange}{\textbf{1.96}} & The bar, for a two-sided test at $\alpha = 0.05$ \\
+$\Phi^{-1}(0.95)$  & 1.645 & The bar, for a one-sided test at $\alpha = 0.05$ \\
+$\Phi^{-1}(0.80)$  & \textcolor{statorange}{\textbf{0.84}}  & Target power of 80\%, inside the MDE formula \\
+$\Phi^{-1}(0.90)$  & 1.282 & Target power of 90\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+```
+
+## Your Work
+
+```{=latex}
+\vspace{0.3em}
+{\color{statprimary!30}
+\hrule height 0.4pt \vspace{2.1em}
+\hrule height 0.4pt \vspace{2.1em}
+\hrule height 0.4pt \vspace{2.1em}
+\hrule height 0.4pt \vspace{2.1em}
+\hrule height 0.4pt}
+```
+
+```{=latex}
+\newpage
+```
+
+## Reading the Table, Both Directions
+
+```{=latex}
+\begin{center}
+\small
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{6.6cm}}
+\toprule
+& \textbf{Forwards:} $z \rightarrow$ area \; ($\Phi$) & \textbf{Backwards:} area $\rightarrow z$ \; ($\Phi^{-1}$) \\
+\midrule
+You have    & A $z$-score, e.g. $0.28$ & An area, e.g. $0.975$ \\
+You do      & Split it: $\mathbf{0.2}$ picks the row, $\mathbf{.08}$ picks the column & Hunt the area in the \textit{body} of the table \\
+You read    & The cell where they meet & The row and column \textit{margins} of that cell \\
+You get     & $\Phi(0.28) = .6103$, i.e. \textbf{power $= 0.61$} & Row $1.9$ + column $.06$, i.e. \textbf{$z = 1.96$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3em}
+
+\footnotesize The table below gives $\Phi(z)$ --- the area to the \textbf{left} of $z$ --- for $z \geq 0$.
+For negative $z$, use $\Phi(-z) = 1 - \Phi(z)$.
+```
+
+## Standard Normal Table: $\Phi(z)$
+
+```{=latex}
+\vspace{0.2em}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4.2pt}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$z$ & \textbf{.00} & \textbf{.01} & \textbf{.02} & \textbf{.03} & \textbf{.04} & \textbf{.05} & \textbf{.06} & \textbf{.07} & \textbf{.08} & \textbf{.09} \\
+\midrule
+0.0 & .5000 & .5040 & .5080 & .5120 & .5160 & .5199 & .5239 & .5279 & .5319 & .5359 \\
+0.1 & .5398 & .5438 & .5478 & .5517 & .5557 & .5596 & .5636 & .5675 & .5714 & .5753 \\
+0.2 & .5793 & .5832 & .5871 & .5910 & .5948 & .5987 & .6026 & .6064 & \cellcolor{stataccbg}\textbf{.6103} & .6141 \\
+0.3 & .6179 & .6217 & .6255 & .6293 & .6331 & .6368 & .6406 & .6443 & .6480 & .6517 \\
+0.4 & .6554 & .6591 & .6628 & .6664 & .6700 & .6736 & .6772 & .6808 & .6844 & .6879 \\
+0.5 & .6915 & .6950 & .6985 & .7019 & .7054 & .7088 & .7123 & .7157 & .7190 & .7224 \\
+0.6 & .7257 & .7291 & .7324 & .7357 & .7389 & .7422 & .7454 & .7486 & .7517 & .7549 \\
+0.7 & .7580 & .7611 & .7642 & .7673 & .7704 & .7734 & .7764 & .7794 & .7823 & .7852 \\
+0.8 & .7881 & .7910 & .7939 & .7967 & \cellcolor{stataccbg}\textbf{.7995} & .8023 & .8051 & .8078 & .8106 & .8133 \\
+0.9 & .8159 & .8186 & .8212 & .8238 & .8264 & .8289 & .8315 & .8340 & .8365 & .8389 \\
+1.0 & .8413 & .8438 & .8461 & .8485 & \cellcolor{stataccbg}\textbf{.8508} & .8531 & .8554 & .8577 & .8599 & .8621 \\
+1.1 & .8643 & .8665 & .8686 & .8708 & .8729 & .8749 & .8770 & .8790 & .8810 & .8830 \\
+1.2 & .8849 & .8869 & .8888 & .8907 & .8925 & .8944 & .8962 & .8980 & .8997 & .9015 \\
+1.3 & .9032 & .9049 & .9066 & .9082 & .9099 & .9115 & .9131 & .9147 & .9162 & .9177 \\
+1.4 & .9192 & .9207 & .9222 & .9236 & .9251 & .9265 & .9279 & .9292 & .9306 & .9319 \\
+1.5 & .9332 & .9345 & .9357 & .9370 & .9382 & .9394 & .9406 & .9418 & .9429 & .9441 \\
+1.6 & .9452 & .9463 & .9474 & .9484 & .9495 & .9505 & .9515 & .9525 & .9535 & .9545 \\
+1.7 & .9554 & .9564 & .9573 & .9582 & .9591 & .9599 & .9608 & .9616 & .9625 & .9633 \\
+1.8 & .9641 & .9649 & .9656 & .9664 & .9671 & .9678 & .9686 & .9693 & .9699 & .9706 \\
+1.9 & .9713 & .9719 & .9726 & .9732 & .9738 & .9744 & \cellcolor{stataccbg}\textbf{.9750} & .9756 & .9761 & .9767 \\
+2.0 & .9772 & .9778 & .9783 & .9788 & .9793 & .9798 & .9803 & .9808 & .9812 & .9817 \\
+2.1 & .9821 & .9826 & .9830 & .9834 & .9838 & .9842 & .9846 & .9850 & .9854 & .9857 \\
+2.2 & .9861 & .9864 & .9868 & .9871 & .9875 & .9878 & .9881 & .9884 & .9887 & .9890 \\
+2.3 & .9893 & .9896 & .9898 & .9901 & .9904 & .9906 & .9909 & .9911 & .9913 & .9916 \\
+2.4 & .9918 & .9920 & .9922 & .9925 & .9927 & .9929 & .9931 & .9932 & .9934 & .9936 \\
+2.5 & .9938 & .9940 & .9941 & .9943 & .9945 & .9946 & .9948 & .9949 & .9951 & .9952 \\
+2.6 & .9953 & .9955 & .9956 & .9957 & .9959 & .9960 & .9961 & .9962 & .9963 & .9964 \\
+2.7 & .9965 & .9966 & .9967 & .9968 & .9969 & .9970 & .9971 & .9972 & .9973 & .9974 \\
+2.8 & .9974 & .9975 & .9976 & .9977 & .9977 & .9978 & .9979 & .9979 & .9980 & .9981 \\
+2.9 & .9981 & .9982 & .9982 & .9983 & .9984 & .9984 & .9985 & .9985 & .9986 & .9986 \\
+3.0 & .9987 & .9987 & .9987 & .9988 & .9988 & .9989 & .9989 & .9989 & .9990 & .9990 \\
+3.1 & .9990 & .9991 & .9991 & .9991 & .9992 & .9992 & .9992 & .9992 & .9993 & .9993 \\
+3.2 & .9993 & .9993 & .9994 & .9994 & .9994 & .9994 & .9994 & .9995 & .9995 & .9995 \\
+3.3 & .9995 & .9995 & .9995 & .9996 & .9996 & .9996 & .9996 & .9996 & .9996 & .9997 \\
+3.4 & .9997 & .9997 & .9997 & .9997 & .9997 & .9997 & .9997 & .9997 & .9997 & .9998 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+
+\footnotesize The shaded cells are the four lookups used in the session: $\Phi(0.28) = .6103$, $\Phi(0.84) = .7995$,
+$\Phi(1.04) = .8508$, and $\Phi(1.96) = .9750$.
+```
